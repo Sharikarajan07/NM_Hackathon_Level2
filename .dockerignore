@@ -1,0 +1,11 @@
+target
+**/target
+node_modules
+**/node_modules
+.git
+.idea
+.vscode
+*.log
+dist
+.DS_Store
+/.next

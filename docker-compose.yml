@@ -1,0 +1,212 @@
+services:
+  # PostgreSQL Databases
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketing_user -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-event:
+    image: postgres:16-alpine
+    container_name: postgres-event
+    environment:
+      POSTGRES_DB: eventdb
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-event-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketing_user -d eventdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-registration:
+    image: postgres:16-alpine
+    container_name: postgres-registration
+    environment:
+      POSTGRES_DB: registrationdb
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-registration-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketing_user -d registrationdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-ticket:
+    image: postgres:16-alpine
+    container_name: postgres-ticket
+    environment:
+      POSTGRES_DB: ticketdb
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-ticket-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketing_user -d ticketdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-notification:
+    image: postgres:16-alpine
+    container_name: postgres-notification
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: ticketing_user
+      POSTGRES_PASSWORD: ticketing_pass
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-notification-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticketing_user -d notificationdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eureka:
+    build:
+      context: ./Eureka-Server
+    container_name: eureka
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build:
+      context: ./API-Gateway
+    container_name: api-gateway
+    depends_on:
+      - eureka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+    ports:
+      - "8080:8080"
+
+  auth-service:
+    build:
+      context: ./Auth-Service
+    container_name: auth-service
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/authdb
+      - SPRING_DATASOURCE_USERNAME=ticketing_user
+      - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+    ports:
+      - "8081:8081"
+
+  event-service:
+    build:
+      context: ./Event-Service
+    container_name: event-service
+    depends_on:
+      postgres-event:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-event:5432/eventdb
+      - SPRING_DATASOURCE_USERNAME=ticketing_user
+      - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+    ports:
+      - "8082:8082"
+
+  registration-service:
+    build:
+      context: ./Registration-Service
+    container_name: registration-service
+    depends_on:
+      postgres-registration:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-registration:5432/registrationdb
+      - SPRING_DATASOURCE_USERNAME=ticketing_user
+      - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+    ports:
+      - "8083:8083"
+
+  ticket-service:
+    build:
+      context: ./Ticket-Service
+    container_name: ticket-service
+    depends_on:
+      postgres-ticket:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-ticket:5432/ticketdb
+      - SPRING_DATASOURCE_USERNAME=ticketing_user
+      - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+    ports:
+      - "8084:8084"
+
+  notification-service:
+    build:
+      context: ./Notification-Service
+    container_name: notification-service
+    depends_on:
+      postgres-notification:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-notification:5432/notificationdb
+      - SPRING_DATASOURCE_USERNAME=ticketing_user
+      - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+    ports:
+      - "8085:8085"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    container_name: frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  postgres-auth-data:
+  postgres-event-data:
+  postgres-registration-data:
+  postgres-ticket-data:
+  postgres-notification-data:
