@@ -1,6 +1,54 @@
 # Event Ticketing System - Microservices Architecture
 
-Complete event ticketing system with microservices architecture using Spring Boot, Spring Cloud, and Next.js.
+Complete event ticketing system with microservices architecture using Spring Boot, Spring Cloud, Next.js, and PostgreSQL.
+
+## ✨ Recent Updates & Bug Fixes
+
+### 🔧 Critical Bug Fixes (November 2025)
+1. **User Role Persistence** - Fixed role changing from ORGANIZER to USER after logout/login
+   - Modified `AuthService.register()` to preserve selected role instead of hardcoding to "USER"
+   - Roles now persist correctly across sessions
+
+2. **Authentication Response** - Added user ID to AuthResponse DTO
+   - Login/signup now returns user ID for frontend API calls
+   - Fixed 500 errors caused by null userId in database
+
+3. **Spring Security Configuration** - Resolved 403 Forbidden errors
+   - Changed `SecurityConfig` to `permitAll()` for auth endpoints
+   - Auth endpoints now accessible without authentication
+
+4. **Automatic Ticket Generation** - Implemented ticket creation workflow
+   - Created `TicketServiceClient` using Spring Cloud Feign
+   - Registration Service now automatically generates tickets after event registration
+   - Tickets appear in "My Tickets" dashboard immediately
+   - Unique ticket numbers: `TKT-XXXXXXXX` format
+
+5. **Event Creation Fix** - Resolved availableTickets null error
+   - `EventService.createEvent()` now initializes `availableTickets = totalTickets`
+   - Events can be created successfully through UI
+
+6. **Custom Exception Handling** - Enhanced error messages
+   - `UserAlreadyExistsException` returns 409 Conflict for duplicate emails
+   - `InvalidCredentialsException` returns 401 Unauthorized for wrong credentials
+   - `GlobalExceptionHandler` provides user-friendly error responses
+
+7. **Hydration Mismatch Fixes** - Resolved React SSR/CSR errors
+   - Added mounted state pattern to prevent localStorage access during SSR
+   - Fixed ReferenceError in admin events page (function ordering)
+
+### 🎨 UI/UX Improvements
+- **Modern Navigation Bar** with gradient backgrounds and backdrop blur
+- **Role-Based Menu Items** (ORGANIZER sees "Manage Events", "Create Event")
+- **User Avatar Dropdown** with name display and logout option
+- **Mobile Responsive** hamburger menu
+- **Alert Components** for registration errors (duplicate email, invalid credentials)
+- **Enhanced Button Visibility** with proper contrast and hover states
+
+### 🐳 Docker Deployment
+- **PostgreSQL 16** databases (5 separate databases on ports 5433-5437)
+- **pgAdmin 4** for database management (localhost:5050)
+- **All services containerized** with health checks
+- **Docker Compose** orchestration for easy deployment
 
 ## 🏗️ Architecture Overview
 
@@ -15,10 +63,10 @@ Auth  Event  Reg  Ticket  Notif
 (8081)(8082)(8083)(8084) (8085)
     |    |    |    |    |
     v    v    v    v    v
-  H2   H2   H2   H2   H2
-  DB   DB   DB   DB   DB
+PostgreSQL Databases (5433-5437)
   
 All services register with Eureka Server (8761)
+Database Management: pgAdmin (5050)
 ```
 
 ## 🚀 Services
@@ -36,9 +84,10 @@ Central entry point for all client requests.
 
 ### 3. Auth Service (Port 8081)
 User authentication and JWT token management.
-- `POST /api/auth/register` - Register new user
+- `POST /api/auth/register` - Register new user (supports USER and ORGANIZER roles)
 - `POST /api/auth/login` - User login with JWT token
-- H2 Console: http://localhost:8081/h2-console
+- Returns user ID, token, email, name, and role
+- PostgreSQL Database (Port 5433)
 
 ### 4. Event Service (Port 8082)
 Event creation and management.
@@ -46,18 +95,19 @@ Event creation and management.
 - `GET /api/events/{id}` - Get event details
 - `GET /api/events/category/{category}` - Filter by category
 - `GET /api/events/search/{keyword}` - Search events
-- `POST /api/events` - Create new event
+- `POST /api/events` - Create new event (auto-initializes availableTickets)
 - `PUT /api/events/{id}` - Update event
 - `DELETE /api/events/{id}` - Soft delete event
-- H2 Console: http://localhost:8082/h2-console
+- PostgreSQL Database (Port 5434)
 
 ### 5. Registration Service (Port 8083)
 Event registration and attendee management.
-- `POST /api/registrations` - Register for event
+- `POST /api/registrations` - Register for event (auto-generates tickets via Feign client)
 - `GET /api/registrations/user/{userId}` - User's registrations
 - `GET /api/registrations/event/{eventId}` - Event registrations
 - `DELETE /api/registrations/{id}` - Cancel registration
-- H2 Console: http://localhost:8083/h2-console
+- Automatic ticket generation with unique TKT-XXXXXXXX numbers
+- PostgreSQL Database (Port 5435)
 
 ### 6. Ticket Service (Port 8084)
 Ticket generation with QR codes.
@@ -65,7 +115,8 @@ Ticket generation with QR codes.
 - `GET /api/tickets/user/{userId}` - User's tickets
 - `GET /api/tickets/event/{eventId}` - Event tickets
 - `POST /api/tickets/{ticketNumber}/validate` - Validate ticket
-- H2 Console: http://localhost:8084/h2-console
+- Tickets created automatically after registration
+- PostgreSQL Database (Port 5436)
 
 ### 7. Notification Service (Port 8085)
 Email notifications and messaging.
@@ -73,16 +124,62 @@ Email notifications and messaging.
 - `GET /api/notifications/user/{userId}` - User notifications
 - `GET /api/notifications/user/{userId}/unread` - Unread notifications
 - `PUT /api/notifications/{id}/read` - Mark as read
-- H2 Console: http://localhost:8085/h2-console
+- PostgreSQL Database (Port 5437)
+
+### 8. pgAdmin 4 (Port 5050)
+Database management and viewing tool.
+- **URL**: http://localhost:5050
+- **Email**: admin@admin.com
+- **Password**: admin
+- View and query all PostgreSQL databases
+- Manage database schemas and data
 
 ## 📋 Prerequisites
 
-- **Java 17+** (JDK 17 or higher)
-- **Maven 3.8+** (Apache Maven)
+- **Docker** and **Docker Compose** (recommended for easy deployment)
+- **Java 17+** (JDK 17 or higher) - if running without Docker
+- **Maven 3.8+** (Apache Maven) - if running without Docker
 - **Node.js 18+** (for Next.js frontend)
 - **pnpm** (Node package manager)
 
-## 🛠️ Setup Instructions
+## 🛠️ Quick Start with Docker (Recommended)
+
+### Start All Backend Services
+
+```powershell
+# Start all services with Docker Compose
+docker-compose up -d
+
+# Check service status
+docker-compose ps
+
+# View logs
+docker logs auth-service --tail 50
+docker logs event-service --tail 50
+```
+
+### Service URLs (Docker)
+- **Eureka Server**: http://localhost:8761 (admin/admin123)
+- **API Gateway**: http://localhost:8080
+- **Auth Service**: http://localhost:8081
+- **Event Service**: http://localhost:8082
+- **Registration Service**: http://localhost:8083
+- **Ticket Service**: http://localhost:8084
+- **Notification Service**: http://localhost:8085
+- **pgAdmin**: http://localhost:5050 (admin@admin.com/admin)
+- **Frontend**: http://localhost:3000
+
+### Stop Services
+
+```powershell
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+```
+
+## 🛠️ Manual Setup (Without Docker)
 
 ### Step 1: Install Maven (Windows PowerShell)
 
@@ -177,15 +274,37 @@ Frontend will be available at: http://localhost:3000
 
 ## 💾 Database Access
 
-Each service uses H2 in-memory database. Access H2 Console:
+### Using pgAdmin (Docker)
 
-| Service | H2 Console URL | JDBC URL | Username | Password |
-|---------|---------------|----------|----------|----------|
-| Auth | http://localhost:8081/h2-console | `jdbc:h2:mem:authdb` | `sa` | (empty) |
-| Event | http://localhost:8082/h2-console | `jdbc:h2:mem:eventdb` | `sa` | (empty) |
-| Registration | http://localhost:8083/h2-console | `jdbc:h2:mem:registrationdb` | `sa` | (empty) |
-| Ticket | http://localhost:8084/h2-console | `jdbc:h2:mem:ticketdb` | `sa` | (empty) |
-| Notification | http://localhost:8085/h2-console | `jdbc:h2:mem:notificationdb` | `sa` | (empty) |
+Access pgAdmin at http://localhost:5050
+- **Email**: admin@admin.com
+- **Password**: admin
+
+**Add Database Servers in pgAdmin:**
+1. Click "Add New Server"
+2. **General Tab**: Name = "Auth Service"
+3. **Connection Tab**:
+   - Host: postgres-auth
+   - Port: 5432
+   - Database: authdb
+   - Username: postgres
+   - Password: postgres
+
+Repeat for other services:
+- Event Service: postgres-event / eventdb
+- Registration Service: postgres-registration / registrationdb
+- Ticket Service: postgres-ticket / ticketdb
+- Notification Service: postgres-notification / notificationdb
+
+### Direct PostgreSQL Connection
+
+| Service | Host | Port | Database | Username | Password |
+|---------|------|------|----------|----------|----------|
+| Auth | localhost | 5433 | authdb | postgres | postgres |
+| Event | localhost | 5434 | eventdb | postgres | postgres |
+| Registration | localhost | 5435 | registrationdb | postgres | postgres |
+| Ticket | localhost | 5436 | ticketdb | postgres | postgres |
+| Notification | localhost | 5437 | notificationdb | postgres | postgres |
 
 ## 🧪 Testing with Postman
 
@@ -205,13 +324,26 @@ Content-Type: application/json
   "email": "john.doe@example.com",
   "password": "Test123",
   "firstName": "John",
-  "lastName": "Doe"
+  "lastName": "Doe",
+  "role": "USER"
+}
+```
+
+**For Organizer Account:**
+```json
+{
+  "email": "organizer@example.com",
+  "password": "Test123",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "role": "ORGANIZER"
 }
 ```
 
 **Expected Response:**
 ```json
 {
+  "id": 1,
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "email": "john.doe@example.com",
   "firstName": "John",
@@ -220,7 +352,9 @@ Content-Type: application/json
 }
 ```
 
-💡 **Save the token** for authenticated requests!
+💡 **Save the token and id** for authenticated requests!
+
+**Important:** Role persists across sessions - signup as ORGANIZER stays ORGANIZER after logout/login
 
 ---
 
@@ -294,6 +428,15 @@ Authorization: Bearer {your_token}
 }
 ```
 
+**Response:**
+- Registration created
+- Tickets automatically generated via Feign client
+- Ticket numbers: TKT-A1B2C3D4, TKT-E5F6G7H8
+- Tickets immediately visible in dashboard
+
+**Check Generated Tickets:**
+**GET** `http://localhost:8084/api/tickets/user/1`
+
 ---
 
 ### 6. Generate Ticket
@@ -343,52 +486,135 @@ pm.environment.set("auth_token", jsonData.token);
 
 ## ✅ Verification Checklist
 
+### Using Docker:
+
 1. **Eureka Dashboard** - http://localhost:8761
    - Login: `admin` / `admin123`
-   - All 5 services should show as UP
+   - All 5 services should show as UP (green)
 
 2. **Frontend** - http://localhost:3000
-   - Homepage loads
-   - Can navigate to signup/login
-   - Dashboard accessible
+   - Homepage loads with modern gradient background
+   - Navigation bar shows Browse Events, Login, Sign Up
+   - Can signup with USER or ORGANIZER role
+   - Dashboard shows registered events and tickets
 
-3. **H2 Consoles** - Check data in databases
-   - Auth Service: http://localhost:8081/h2-console
-   - Event Service: http://localhost:8082/h2-console
-   - Registration Service: http://localhost:8083/h2-console
-   - Ticket Service: http://localhost:8084/h2-console
-   - Notification Service: http://localhost:8085/h2-console
+3. **pgAdmin** - http://localhost:5050
+   - Login: admin@admin.com / admin
+   - Add all 5 database servers
+   - View users, events, registrations, tickets tables
 
-4. **API Testing**
-   - Register user → Get JWT token
-   - Create event → Event appears in database
-   - Register for event → Registration created
-   - Generate ticket → Ticket with QR code generated
+4. **Test Role Persistence**
+   - Signup as ORGANIZER role
+   - Verify "Manage Events" and "Create Event" appear in navigation
+   - Logout
+   - Login with same credentials
+   - Role should still be ORGANIZER (not USER)
+
+5. **Test Ticket Generation**
+   - Register for an event
+   - Check "My Tickets" in dashboard
+   - Tickets should appear immediately with TKT-XXXXXXXX numbers
+
+6. **Check Logs**
+   ```powershell
+   docker logs auth-service --tail 50
+   docker logs event-service --tail 50
+   docker logs registration-service --tail 50
+   docker logs ticket-service --tail 50
+   ```
 
 ## 🔧 Troubleshooting
 
-### Service won't start
+### Docker Issues
+
+**Services won't start:**
+```powershell
+# Check container status
+docker-compose ps
+
+# View specific service logs
+docker logs auth-service --tail 100
+
+# Restart specific service
+docker-compose restart auth-service
+
+# Rebuild specific service
+docker-compose up -d --build auth-service
+```
+
+**Database connection refused:**
+```powershell
+# Check if PostgreSQL containers are healthy
+docker ps | findstr postgres
+
+# Restart database container
+docker-compose restart postgres-auth
+```
+
+**Port already in use:**
+```powershell
+# Find process using port
+netstat -ano | findstr :8080
+
+# Kill process
+taskkill /F /PID {process_id}
+```
+
+### Application Issues
+
+**Role changes after logout:**
+- **Fixed!** Auth Service now preserves selected role
+- If issue persists, rebuild auth-service: `docker-compose up -d --build auth-service`
+
+**Tickets not appearing in dashboard:**
+- **Fixed!** Registration Service auto-generates tickets via Feign client
+- Check logs: `docker logs registration-service --tail 50`
+- Verify ticket-service is running: `docker ps | findstr ticket`
+
+**Event creation fails with 500 error:**
+- **Fixed!** Event Service now auto-initializes availableTickets
+- Ensure all required fields are provided
+- Check logs: `docker logs event-service --tail 50`
+
+**403 Forbidden on auth endpoints:**
+- **Fixed!** Security config now permits all auth endpoints
+- Verify auth-service is running: `docker ps | findstr auth`
+
+**Hydration mismatch errors:**
+- **Fixed!** Added mounted state to prevent SSR/CSR mismatch
+- Clear browser cache and refresh page
+
+### Service won't start (Manual Setup)
 - Check if port is already in use: `netstat -ano | findstr :{port}`
 - Kill process: `taskkill /F /PID {process_id}`
 
-### Maven not found
+### Maven not found (Manual Setup)
 - Verify Maven installation: `mvn -version`
 - Set JAVA_HOME and PATH as shown in setup
 
-### Connection refused
+### Connection refused (Manual Setup)
 - Ensure Eureka Server started first
 - Wait 30 seconds after starting Eureka
 - Check service logs for errors
 
 ### 500 Internal Server Error
-- Check terminal logs for stack trace
+- Check terminal/Docker logs for stack trace
 - Verify request body matches entity fields
 - Ensure all required fields are provided
+- Common fixes already applied:
+  - ✅ User ID now included in AuthResponse
+  - ✅ Event availableTickets auto-initialized
+  - ✅ Registration auto-generates tickets
 
 ### JWT Token issues
 - Token might be expired (24 hours)
 - Login again to get new token
 - Verify token is included in Authorization header
+
+### Database Issues
+- **Docker**: Databases persist in volumes, survive restarts
+- **pgAdmin**: Use container names (postgres-auth, etc.) not localhost
+- **Direct access**: Use mapped ports (5433-5437)
 
 ## 📚 API Documentation
 
@@ -434,21 +660,46 @@ Authorization: Bearer {your_jwt_token}
 
 ## 🔐 Security
 
-- JWT-based authentication
-- BCrypt password encryption
-- Token expiration: 24 hours
-- CORS enabled for frontend integration
-- H2 console secured (production: disable)
+- **JWT-based authentication** with 24-hour expiration
+- **BCrypt password encryption** (strength 10)
+- **Role-based access control** (USER, ORGANIZER)
+- **Custom exception handling** with proper HTTP status codes
+- **CORS enabled** for frontend integration
+- **Spring Security** with permitAll() for auth endpoints
+- **PostgreSQL** with persistent storage and proper credentials
+
+## 🐳 Docker Configuration
+
+### Services
+- **5 PostgreSQL databases** (one per microservice)
+- **pgAdmin 4** for database management
+- **Eureka Server** for service discovery
+- **API Gateway** for routing
+- **5 Microservices** (Auth, Event, Registration, Ticket, Notification)
+
+### Volumes
+- postgres-auth-data
+- postgres-event-data
+- postgres-registration-data
+- postgres-ticket-data
+- postgres-notification-data
+- pgadmin-data
+
+### Networks
+- app-network (bridge)
+
+### Health Checks
+All services include health checks for reliability
 
 ## 🚀 Production Deployment
 
-### Database Migration
-Replace H2 with production databases in `application.yml`:
+### Database Configuration
+Already using PostgreSQL in Docker. For production:
 
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/eventdb
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
@@ -476,12 +727,39 @@ spring:
 
 ## 📝 Notes
 
-- **H2 Databases**: Data is lost on service restart (in-memory)
+- **PostgreSQL Databases**: Data persists in Docker volumes
 - **Service Discovery**: All services auto-register with Eureka
 - **Load Balancing**: API Gateway handles load balancing
 - **Resilience**: Implement circuit breakers (Resilience4j) for production
 - **Monitoring**: Add Spring Boot Actuator endpoints for health checks
 - **Logging**: Configure centralized logging (ELK stack)
+- **Automatic Ticket Generation**: Registration Service creates tickets via Feign
+- **Role Persistence**: User roles correctly preserved across sessions
+- **Error Handling**: Custom exceptions with user-friendly messages
+
+## 🎯 Key Features Implemented
+
+### Backend
+- ✅ Microservices architecture with Spring Cloud
+- ✅ Service discovery via Eureka
+- ✅ API Gateway routing
+- ✅ JWT authentication with role-based access
+- ✅ PostgreSQL persistent storage
+- ✅ Automatic ticket generation workflow
+- ✅ Custom exception handling (409, 401 responses)
+- ✅ Inter-service communication with Feign
+- ✅ Docker containerization with health checks
+
+### Frontend
+- ✅ Modern Next.js 14 with TypeScript
+- ✅ Role-based navigation (USER vs ORGANIZER)
+- ✅ Responsive design with mobile menu
+- ✅ User-friendly error alerts
+- ✅ Hydration mismatch prevention
+- ✅ Avatar dropdown with user info
+- ✅ Gradient backgrounds with backdrop blur
+- ✅ Event browsing and registration
+- ✅ Ticket dashboard
 
 ## 🤝 Contributing
 
