@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Navigation from '@/components/navigation'
 import EventGrid from '@/components/event-grid'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, Loader2 } from 'lucide-react'
+import { Search, Filter, Loader2, Plus } from 'lucide-react'
 import { eventsApi } from '@/lib/api-client'
 
 const CATEGORIES = [
@@ -21,13 +22,19 @@ const CATEGORIES = [
 ]
 
 export default function EventsPage() {
+  const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState('All Events')
   const [searchQuery, setSearchQuery] = useState('')
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    const role = localStorage.getItem('userRole')
+    setUserRole(role || '')
     fetchEvents()
   }, [selectedCategory])
 
@@ -76,17 +83,35 @@ export default function EventsPage() {
     setSearchQuery('')
   }
 
+  if (!mounted) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
       <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-muted/50 to-background">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-5xl font-bold mb-4">Explore Events</h1>
-          <p className="text-xl text-muted-foreground mb-8">Find and register for amazing events happening around you</p>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-5xl font-bold mb-2">Explore Events</h1>
+              <p className="text-xl text-muted-foreground">Find and register for amazing events happening around you</p>
+            </div>
+            {userRole === 'ORGANIZER' && (
+              <Button 
+                size="lg" 
+                onClick={() => router.push('/admin/events/create')}
+                className="gap-2 shadow-lg hover:shadow-xl transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                Create Event
+              </Button>
+            )}
+          </div>
           
           {/* Search Bar */}
-          <div className="flex gap-3 mb-8">
+          <div className="flex gap-3 mb-8 mt-8">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input 

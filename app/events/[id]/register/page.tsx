@@ -45,12 +45,28 @@ export default function RegisterPage() {
     e.preventDefault()
     
     const userId = localStorage.getItem('userId')
+    console.log('🔍 DEBUG - localStorage userId:', userId)
+    
     if (!userId) {
       toast({
         title: 'Authentication Required',
         description: 'Please login to register for events',
         variant: 'destructive'
       })
+      router.push('/login')
+      return
+    }
+
+    const userIdNum = parseInt(userId)
+    console.log('🔍 DEBUG - Parsed userIdNum:', userIdNum, 'isNaN:', isNaN(userIdNum))
+    
+    if (isNaN(userIdNum)) {
+      toast({
+        title: 'Session Error',
+        description: 'Please logout and login again to continue',
+        variant: 'destructive'
+      })
+      localStorage.clear()
       router.push('/login')
       return
     }
@@ -66,15 +82,18 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
+    const registrationData = {
+      eventId: parseInt(params.id as string),
+      userId: userIdNum,
+      numberOfTickets,
+      totalPrice: event.price * numberOfTickets,
+      status: 'CONFIRMED',
+      specialRequirements: specialRequirements || undefined
+    }
+    console.log('🔍 DEBUG - Registration data being sent:', JSON.stringify(registrationData, null, 2))
+
     try {
-      await registrationApi.register({
-        eventId: parseInt(params.id as string),
-        userId: parseInt(userId),
-        numberOfTickets,
-        totalPrice: event.price * numberOfTickets,
-        status: 'CONFIRMED',
-        specialRequirements: specialRequirements || undefined
-      })
+      await registrationApi.register(registrationData)
       
       toast({
         title: 'Registration Successful!',

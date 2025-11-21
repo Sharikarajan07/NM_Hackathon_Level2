@@ -8,41 +8,67 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, Lock, LogIn } from 'lucide-react'
+import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react'
 import { authApi } from '@/lib/api-client'
 
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<{ title: string; message: string } | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
       const response: any = await authApi.login(email, password)
+      console.log('🔐 LOGIN RESPONSE:', JSON.stringify(response, null, 2))
+      console.log('🔐 User ID from response:', response.id)
+      console.log('🔐 All response keys:', Object.keys(response))
       
       localStorage.setItem('authToken', response.token)
       localStorage.setItem('userName', `${response.firstName} ${response.lastName}`)
-      localStorage.setItem('userId', response.id || Math.random().toString(36).substr(2, 9))
+      localStorage.setItem('userId', response.id?.toString() || '')
       localStorage.setItem('userRole', response.role)
       localStorage.setItem('userEmail', response.email)
+      
+      console.log('✅ Stored in localStorage - userId:', localStorage.getItem('userId'))
       
       toast({
         title: 'Welcome back!',
         description: `Good to see you again, ${response.firstName}!`
       })
       
-      router.push('/dashboard')
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 500)
     } catch (error: any) {
+      console.error('❌ LOGIN ERROR:', error)
+      
+      let errorTitle = 'Login Failed'
+      let errorDescription = 'Invalid email or password. Please try again.'
+      
+      if (error.status === 401 || error.status === 403) {
+        errorDescription = 'Invalid email or password. Please check your credentials.'
+      } else if (error.status === 500) {
+        errorDescription = 'Server error. Please try again later.'
+      } else if (error.message) {
+        errorDescription = error.message
+      }
+      
+      setError({ title: errorTitle, message: errorDescription })
+      
       toast({
-        title: 'Login Failed',
-        description: error.message || 'Invalid email or password. Please try again.',
-        variant: 'destructive'
+        title: errorTitle,
+        description: errorDescription,
+        variant: 'destructive',
+        duration: 5000,
       })
     } finally {
       setIsLoading(false)
@@ -64,6 +90,14 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>{error.title}</AlertTitle>
+                  <AlertDescription>{error.message}</AlertDescription>
+                </Alert>
+              )}
+              
               <div>
                 <Label htmlFor="email" className="text-base">Email Address</Label>
                 <div className="relative mt-2">
@@ -74,7 +108,7 @@ export default function LoginPage() {
                     placeholder="you@example.com"
                     className="pl-10 h-12"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setError(null); }}
                     required
                   />
                 </div>
@@ -90,7 +124,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     className="pl-10 h-12"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setError(null); }}
                     required
                   />
                 </div>

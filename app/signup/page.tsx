@@ -9,14 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, Lock, User, UserCircle } from 'lucide-react'
+import { Mail, Lock, User, UserCircle, AlertCircle } from 'lucide-react'
 import { authApi } from '@/lib/api-client'
 
 export default function SignupPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<{ title: string; message: string } | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,25 +31,33 @@ export default function SignupPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    setError(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
     if (formData.password !== formData.confirmPassword) {
+      const errorMsg = { title: 'Password Mismatch', message: 'Passwords do not match.' }
+      setError(errorMsg)
       toast({
-        title: 'Error',
-        description: 'Passwords do not match.',
-        variant: 'destructive'
+        title: errorMsg.title,
+        description: errorMsg.message,
+        variant: 'destructive',
+        duration: 5000,
       })
       return
     }
 
     if (formData.password.length < 6) {
+      const errorMsg = { title: 'Weak Password', message: 'Password must be at least 6 characters long.' }
+      setError(errorMsg)
       toast({
-        title: 'Error',
-        description: 'Password must be at least 6 characters long.',
-        variant: 'destructive'
+        title: errorMsg.title,
+        description: errorMsg.message,
+        variant: 'destructive',
+        duration: 5000,
       })
       return
     }
@@ -55,6 +65,13 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
+      console.log('📝 SIGNUP REQUEST:', {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        role: formData.role
+      })
+
       const response: any = await authApi.signup({
         email: formData.email,
         password: formData.password,
@@ -63,22 +80,56 @@ export default function SignupPage() {
         role: formData.role
       })
       
+      console.log('✅ SIGNUP RESPONSE:', JSON.stringify(response, null, 2))
+      console.log('✅ User ID from response:', response.id)
+      
       localStorage.setItem('authToken', response.token)
       localStorage.setItem('userName', `${formData.firstName} ${formData.lastName}`)
-      localStorage.setItem('userId', response.userId || response.id)
+      localStorage.setItem('userId', response.id?.toString() || '')
       localStorage.setItem('userRole', formData.role)
+      localStorage.setItem('userEmail', formData.email)
+      
+      console.log('✅ Stored in localStorage:', {
+        userId: localStorage.getItem('userId'),
+        userName: localStorage.getItem('userName'),
+        userRole: localStorage.getItem('userRole')
+      })
       
       toast({
         title: 'Account Created!',
         description: `Welcome to EventHub, ${formData.firstName}!`
       })
       
-      router.push('/dashboard')
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 500)
     } catch (error: any) {
+      console.error('❌ SIGNUP ERROR:', error)
+      
+      let errorTitle = 'Registration Failed'
+      let errorDescription = 'Failed to create account. Please try again.'
+      
+      if (error.status === 409 || (error.message && error.message.toLowerCase().includes('already registered'))) {
+        errorTitle = 'Email Already Registered'
+        errorDescription = 'This email is already registered with another account. Please login to continue.'
+      } else if (error.message && error.message.includes('User already exists')) {
+        errorTitle = 'Email Already Registered'
+        errorDescription = 'This email is already registered with another account. Please login to continue.'
+      } else if (error.status === 400) {
+        errorDescription = 'Invalid input. Please check all fields and try again.'
+      } else if (error.status === 500) {
+        errorDescription = 'Server error. Please try again later.'
+      } else if (error.message) {
+        errorDescription = error.message
+      }
+      
+      setError({ title: errorTitle, message: errorDescription })
+      
       toast({
-        title: 'Registration Failed',
-        description: error.message || 'Failed to create account. Please try again.',
-        variant: 'destructive'
+        title: errorTitle,
+        description: errorDescription,
+        variant: 'destructive',
+        duration: 5000,
       })
     } finally {
       setIsLoading(false)
@@ -100,6 +151,14 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>{error.title}</AlertTitle>
+                  <AlertDescription>{error.message}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName" className="text-base">First Name</Label>

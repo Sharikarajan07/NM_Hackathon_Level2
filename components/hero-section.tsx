@@ -7,9 +7,12 @@ import { useEffect, useState } from 'react'
 
 export default function HeroSection() {
   const [mounted, setMounted] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    const token = localStorage.getItem('authToken')
+    setIsLoggedIn(!!token)
   }, [])
 
   return (
@@ -47,11 +50,13 @@ export default function HeroSection() {
               Browse Events <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
-          <Link href="/signup">
-            <Button size="lg" variant="outline" className="border-2 text-lg px-10 py-7 h-auto hover:bg-primary/5 hover:scale-105 transition-all duration-300">
-              Create Account
-            </Button>
-          </Link>
+          {!isLoggedIn && (
+            <Link href="/signup">
+              <Button size="lg" variant="outline" className="border-2 text-lg px-10 py-7 h-auto hover:bg-primary/5 hover:scale-105 transition-all duration-300">
+                Create Account
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Feature highlights */}

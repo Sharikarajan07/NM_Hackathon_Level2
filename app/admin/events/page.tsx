@@ -16,8 +16,26 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true)
+      const allEvents = await eventsApi.getAll()
+      setEvents(allEvents as any[])
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load events',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
+    setMounted(true)
     const token = localStorage.getItem('authToken')
     const role = localStorage.getItem('userRole')
     
@@ -40,20 +58,8 @@ export default function AdminEventsPage() {
     loadEvents()
   }, [router])
 
-  const loadEvents = async () => {
-    try {
-      setLoading(true)
-      const allEvents = await eventsApi.getAll()
-      setEvents(allEvents as any[])
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load events',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
+  if (!mounted) {
+    return null
   }
 
   const handleDelete = async (eventId: string) => {

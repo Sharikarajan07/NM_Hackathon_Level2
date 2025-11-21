@@ -45,7 +45,17 @@ export async function apiCall<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`)
+    let errorMessage = response.statusText
+    try {
+      const errorData = await response.json()
+      errorMessage = errorData.message || errorData.error || errorMessage
+    } catch (e) {
+      // If response is not JSON, use statusText
+    }
+    
+    const error: any = new Error(errorMessage)
+    error.status = response.status
+    throw error
   }
 
   return response.json()
@@ -102,11 +112,13 @@ export const eventsApi = {
 }
 
 export const registrationApi = {
-  register: (data: { eventId: number; userId: number; numberOfTickets: number; totalPrice: number; status: string; specialRequirements?: string }) =>
-    apiCall('/api/registrations', {
+  register: (data: { eventId: number; userId: number; numberOfTickets: number; totalPrice: number; status: string; specialRequirements?: string }) => {
+    console.log('📤 API CLIENT - Sending registration request:', JSON.stringify(data, null, 2))
+    return apiCall('/api/registrations', {
       method: 'POST',
       body: JSON.stringify(data),
-    }),
+    })
+  },
   
   getUserRegistrations: (userId: string) =>
     apiCall(`/api/registrations/user/${userId}`, { method: 'GET' }),

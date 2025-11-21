@@ -17,6 +17,7 @@ public class EventService {
     public Event createEvent(Event event) {
         event.setCreatedAt(LocalDateTime.now());
         event.setActive(true);
+        event.setAvailableTickets(event.getTotalTickets()); // Initialize available tickets
         return eventRepository.save(event);
     }
 
