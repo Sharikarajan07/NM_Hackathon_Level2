@@ -107,6 +107,60 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-lg">Manage your tickets and profile settings</p>
         </div>
 
+        {/* Quick Action Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Card 
+            className="border-2 hover:border-primary transition-all cursor-pointer hover:shadow-lg"
+            onClick={() => router.push('/dashboard')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <User className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Dashboard</h3>
+                  <p className="text-sm text-muted-foreground">Overview</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="border-2 hover:border-primary transition-all cursor-pointer hover:shadow-lg"
+            onClick={() => router.push('/tickets')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Ticket className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">My Tickets</h3>
+                  <p className="text-sm text-muted-foreground">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="border-2 hover:border-primary transition-all cursor-pointer hover:shadow-lg"
+            onClick={() => router.push('/profile')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <User className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">Profile</h3>
+                  <p className="text-sm text-muted-foreground">Settings</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <Tabs defaultValue="tickets" className="w-full">
           <TabsList className="mb-8 w-full sm:w-auto">
             <TabsTrigger value="tickets" className="flex-1 sm:flex-none text-base px-8 py-3">My Tickets</TabsTrigger>

@@ -155,9 +155,15 @@ export default function Navigation() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
+                      <Link href="/tickets" className="cursor-pointer">
                         <Ticket className="w-4 h-4 mr-2" />
                         My Tickets
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
                       </Link>
                     </DropdownMenuItem>
                     {userRole === 'ORGANIZER' && (
@@ -241,12 +247,20 @@ export default function Navigation() {
                     My Dashboard
                   </Link>
                   <Link 
-                    href="/dashboard" 
+                    href="/tickets" 
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Ticket className="w-4 h-4" />
                     My Tickets
+                  </Link>
+                  <Link 
+                    href="/profile" 
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
                   </Link>
                   {userRole === 'ORGANIZER' && (
                     <Link 
