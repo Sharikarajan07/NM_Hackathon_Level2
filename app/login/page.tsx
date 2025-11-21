@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, Lock } from 'lucide-react'
+import { Mail, Lock, LogIn } from 'lucide-react'
+import { authApi } from '@/lib/api-client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -23,22 +24,24 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response: any = await authApi.login(email, password)
       
-      localStorage.setItem('authToken', 'mock-jwt-token-' + Date.now())
-      localStorage.setItem('userName', email.split('@')[0])
-      localStorage.setItem('userId', Math.random().toString(36).substr(2, 9))
+      localStorage.setItem('authToken', response.token)
+      localStorage.setItem('userName', `${response.firstName} ${response.lastName}`)
+      localStorage.setItem('userId', response.id || Math.random().toString(36).substr(2, 9))
+      localStorage.setItem('userRole', response.role)
+      localStorage.setItem('userEmail', response.email)
       
       toast({
         title: 'Welcome back!',
-        description: 'You have been successfully logged in.'
+        description: `Good to see you again, ${response.firstName}!`
       })
       
       router.push('/dashboard')
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: 'Error',
-        description: 'Failed to login. Please try again.',
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password. Please try again.',
         variant: 'destructive'
       })
     } finally {
@@ -47,26 +50,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <Navigation />
 
       <section className="py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <p className="text-muted-foreground">Sign in to your EventHub account</p>
+        <Card className="w-full max-w-md shadow-2xl border-2">
+          <CardHeader className="space-y-2 pb-8">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <LogIn className="w-10 h-10 text-primary" />
+            </div>
+            <CardTitle className="text-3xl text-center">Welcome Back</CardTitle>
+            <p className="text-muted-foreground text-center text-lg">Sign in to your EventHub account</p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
+                <Label htmlFor="email" className="text-base">Email Address</Label>
+                <div className="relative mt-2">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="you@example.com"
-                    className="pl-10"
+                    className="pl-10 h-12"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -75,14 +81,14 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
+                <Label htmlFor="password" className="text-base">Password</Label>
+                <div className="relative mt-2">
                   <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    className="pl-10"
+                    className="pl-10 h-12"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -92,17 +98,24 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-12 text-base font-semibold"
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin">⏳</span>
+                    Signing in...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
 
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground pt-2">
                 Don't have an account?{' '}
-                <Link href="/signup" className="text-primary hover:underline">
-                  Sign up
+                <Link href="/signup" className="text-primary hover:underline font-semibold">
+                  Sign up here
                 </Link>
               </p>
             </form>

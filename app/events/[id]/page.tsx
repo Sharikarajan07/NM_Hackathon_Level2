@@ -6,133 +6,154 @@ import Navigation from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Users, Clock, Share2 } from 'lucide-react'
-
-interface Event {
-  id: string
-  name: string
-  description: string
-  date: string
-  venue: string
-  totalTickets: number
-  availableTickets: number
-  category?: string
-}
-
-const MOCK_EVENTS: { [key: string]: Event } = {
-  '1': {
-    id: '1',
-    name: 'Tech Conference 2025',
-    description: 'Annual technology conference featuring industry leaders discussing the latest trends in AI, cloud computing, and web technologies. Join us for keynote speeches, panel discussions, and networking sessions.',
-    date: '2025-03-15',
-    venue: 'San Francisco Convention Center',
-    totalTickets: 500,
-    availableTickets: 145,
-    category: 'Conference'
-  },
-  '2': {
-    id: '2',
-    name: 'Summer Music Festival',
-    description: 'Three-day music festival with top artists performing live. Enjoy performances from various genres including rock, pop, and indie music.',
-    date: '2025-06-20',
-    venue: 'Central Park, New York',
-    totalTickets: 10000,
-    availableTickets: 3200,
-    category: 'Music'
-  }
-}
+import { Calendar, MapPin, Users, Clock, Share2, DollarSign, Ticket } from 'lucide-react'
+import { eventsApi } from '@/lib/api-client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function EventDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const [event, setEvent] = useState<Event | null>(null)
+  const { toast } = useToast()
+  const [event, setEvent] = useState<any | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const eventId = params.id as string
-    const mockEvent = MOCK_EVENTS[eventId]
-    if (mockEvent) {
-      setEvent(mockEvent)
-    }
-    setIsLoading(false)
+    loadEvent()
   }, [params.id])
+
+  const loadEvent = async () => {
+    try {
+      const data = await eventsApi.getById(params.id as string)
+      setEvent(data)
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load event details',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
   }
 
   const handleRegister = () => {
     const token = localStorage.getItem('authToken')
     if (!token) {
+      toast({
+        title: 'Login Required',
+        description: 'Please login to register for events',
+        variant: 'destructive'
+      })
       router.push('/login')
       return
     }
     router.push(`/events/${event?.id}/register`)
   }
 
-  if (isLoading) return <div>Loading...</div>
-  if (!event) return <div>Event not found</div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="animate-spin text-4xl">⏳</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <Card className="p-8">
+            <CardTitle className="text-center">Event not found</CardTitle>
+            <Button onClick={() => router.push('/events')} className="mt-4 w-full">
+              Browse All Events
+            </Button>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   const availabilityPercentage = (event.availableTickets / event.totalTickets) * 100
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <Navigation />
 
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <Button variant="outline" onClick={() => router.back()}>
-            ← Back
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="mb-8">
+          <Button variant="outline" onClick={() => router.back()} className="border-2">
+            ← Back to Events
           </Button>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <Badge variant="outline" className="mb-3">{event.category}</Badge>
-              <h1 className="text-4xl font-bold mb-4">{event.name}</h1>
-              <p className="text-lg text-muted-foreground">{event.description}</p>
+            {event.imageUrl && (
+              <div className="mb-8 rounded-xl overflow-hidden shadow-2xl">
+                <img src={event.imageUrl} alt={event.title} className="w-full h-96 object-cover" />
+              </div>
+            )}
+
+            <div className="mb-8">
+              <Badge variant="secondary" className="mb-4 text-base px-4 py-1">{event.category}</Badge>
+              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {event.title}
+              </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">{event.description}</p>
             </div>
 
-            <Card className="mb-8">
+            <Card className="shadow-xl border-2">
               <CardHeader>
-                <CardTitle>Event Details</CardTitle>
+                <CardTitle className="text-2xl flex items-center gap-3">
+                  <Calendar className="w-6 h-6 text-primary" />
+                  Event Details
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-primary" />
+              <CardContent className="space-y-6">
+                <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                  <Calendar className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Date & Time</p>
-                    <p className="font-semibold">{formatDate(event.date)}</p>
+                    <p className="text-sm text-muted-foreground font-semibold">Start Date</p>
+                    <p className="font-bold text-lg">{formatDate(event.startDate)}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-primary" />
+                <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                  <Clock className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
-                    <p className="font-semibold">{event.venue}</p>
+                    <p className="text-sm text-muted-foreground font-semibold">End Date</p>
+                    <p className="font-bold text-lg">{formatDate(event.endDate)}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-primary" />
+                <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                  <MapPin className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Capacity</p>
-                    <p className="font-semibold">{event.totalTickets} total tickets</p>
+                    <p className="text-sm text-muted-foreground font-semibold">Location</p>
+                    <p className="font-bold text-lg">{event.location}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-primary" />
+                <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
+                  <Users className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Availability</p>
-                    <p className="font-semibold">{event.availableTickets} tickets remaining</p>
+                    <p className="text-sm text-muted-foreground font-semibold">Organizer</p>
+                    <p className="font-bold text-lg">{event.organizer}</p>
                   </div>
                 </div>
               </CardContent>
@@ -140,42 +161,56 @@ export default function EventDetailPage() {
           </div>
 
           <div>
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Registration</CardTitle>
+            <Card className="sticky top-4 shadow-2xl border-2">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl">Registration</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                <div className="p-6 bg-primary/10 rounded-xl border-2 border-primary/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-muted-foreground">Price per ticket</span>
+                    <span className="text-3xl font-bold text-primary">${event.price.toFixed(2)}</span>
+                  </div>
+                </div>
+
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Tickets Available</p>
-                  <div className="w-full bg-muted rounded-full h-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-semibold">Ticket Availability</span>
+                    <span className="text-sm font-bold">{event.availableTickets} / {event.totalTickets}</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                     <div
-                      className="bg-primary h-2 rounded-full transition-all"
+                      className="bg-gradient-to-r from-primary to-primary/60 h-3 rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(5, availabilityPercentage)}%` }}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {event.availableTickets} of {event.totalTickets}
-                  </p>
                 </div>
 
                 {event.availableTickets > 0 ? (
                   <Button
                     onClick={handleRegister}
-                    className="w-full"
+                    className="w-full h-14 text-lg font-semibold"
                     size="lg"
                   >
+                    <Ticket className="w-5 h-5 mr-2" />
                     Register Now
                   </Button>
                 ) : (
-                  <Button disabled className="w-full" size="lg">
+                  <Button disabled className="w-full h-14 text-lg" size="lg">
                     Sold Out
                   </Button>
                 )}
 
-                <Button variant="outline" className="w-full gap-2">
+                <Button variant="outline" className="w-full h-12 gap-2 border-2">
                   <Share2 className="w-4 h-4" />
                   Share Event
                 </Button>
+
+                <div className="pt-4 border-t">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Secure registration powered by EventHub
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>

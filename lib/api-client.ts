@@ -1,4 +1,8 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+// Direct service URLs (bypassing API Gateway due to Eureka registration issues)
+const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8081'
+const EVENT_SERVICE_URL = process.env.NEXT_PUBLIC_EVENT_URL || 'http://localhost:8082'
+const REGISTRATION_SERVICE_URL = process.env.NEXT_PUBLIC_REGISTRATION_URL || 'http://localhost:8083'
+const TICKET_SERVICE_URL = process.env.NEXT_PUBLIC_TICKET_URL || 'http://localhost:8084'
 
 interface ApiOptions extends RequestInit {
   headers?: Record<string, string>
@@ -6,7 +10,8 @@ interface ApiOptions extends RequestInit {
 
 export async function apiCall<T>(
   endpoint: string,
-  options: ApiOptions = {}
+  options: ApiOptions = {},
+  serviceUrl?: string
 ): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
   
@@ -19,7 +24,22 @@ export async function apiCall<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Determine base URL based on endpoint or use provided serviceUrl
+  let baseUrl = serviceUrl || AUTH_SERVICE_URL
+  if (!serviceUrl) {
+    if (endpoint.startsWith('/api/auth') || endpoint.startsWith('/auth')) {
+      baseUrl = AUTH_SERVICE_URL
+    } else if (endpoint.startsWith('/api/events') || endpoint.startsWith('/events')) {
+      baseUrl = EVENT_SERVICE_URL
+    } else if (endpoint.startsWith('/api/registrations') || endpoint.startsWith('/registrations')) {
+      baseUrl = REGISTRATION_SERVICE_URL
+    } else if (endpoint.startsWith('/api/tickets') || endpoint.startsWith('/tickets')) {
+      baseUrl = TICKET_SERVICE_URL
+    }
+  }
+
+  // Keep the endpoint as is - services expect /api prefix
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
   })
@@ -38,16 +58,17 @@ export const authApi = {
       body: JSON.stringify({ email, password }),
     }),
   
-  signup: (email: string, password: string, name: string) =>
+  signup: (userData: { email: string; password: string; firstName: string; lastName: string; role: string }) =>
     apiCall('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify(userData),
     }),
   
   logout: () => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('userName')
     localStorage.removeItem('userId')
+    localStorage.removeItem('userRole')
   }
 }
 
@@ -69,13 +90,22 @@ export const eventsApi = {
       method: 'POST',
       body: JSON.stringify(event),
     }),
+  
+  update: (id: string, event: any) =>
+    apiCall(`/api/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(event),
+    }),
+  
+  delete: (id: string) =>
+    apiCall(`/api/events/${id}`, { method: 'DELETE' }),
 }
 
 export const registrationApi = {
-  register: (eventId: number, userId: number, numberOfTickets: number) =>
+  register: (data: { eventId: number; userId: number; numberOfTickets: number; totalPrice: number; status: string; specialRequirements?: string }) =>
     apiCall('/api/registrations', {
       method: 'POST',
-      body: JSON.stringify({ eventId, userId, numberOfTickets }),
+      body: JSON.stringify(data),
     }),
   
   getUserRegistrations: (userId: string) =>
@@ -83,6 +113,9 @@ export const registrationApi = {
   
   getEventRegistrations: (eventId: string) =>
     apiCall(`/api/registrations/event/${eventId}`, { method: 'GET' }),
+  
+  getById: (id: string) =>
+    apiCall(`/api/registrations/${id}`, { method: 'GET' }),
   
   cancelRegistration: (id: string) =>
     apiCall(`/api/registrations/${id}`, { method: 'DELETE' }),

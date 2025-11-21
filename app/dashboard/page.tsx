@@ -7,64 +7,74 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, Download, QrCode, Ticket, User } from 'lucide-react'
-
-interface UserTicket {
-  id: string
-  eventName: string
-  eventDate: string
-  ticketNumber: string
-  qrCode: string
-  status: 'confirmed' | 'pending' | 'used'
-}
-
-const MOCK_TICKETS: UserTicket[] = [
-  {
-    id: '1',
-    eventName: 'Tech Conference 2025',
-    eventDate: '2025-03-15',
-    ticketNumber: 'TC-2025-001234',
-    qrCode: 'QR-CODE-12345',
-    status: 'confirmed'
-  },
-  {
-    id: '2',
-    eventName: 'Summer Music Festival',
-    eventDate: '2025-06-20',
-    ticketNumber: 'SMF-2025-005678',
-    qrCode: 'QR-CODE-56789',
-    status: 'confirmed'
-  },
-  {
-    id: '3',
-    eventName: 'Web Development Workshop',
-    eventDate: '2025-04-05',
-    ticketNumber: 'WDW-2025-009012',
-    qrCode: 'QR-CODE-90123',
-    status: 'pending'
-  }
-]
+import { Calendar, Download, QrCode, Ticket, User, Plus, Loader2 } from 'lucide-react'
+import { registrationApi, ticketsApi, eventsApi } from '@/lib/api-client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
-  const [tickets, setTickets] = useState<UserTicket[]>([])
+  const [userRole, setUserRole] = useState('')
+  const [tickets, setTickets] = useState<any[]>([])
+  const [registrations, setRegistrations] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [eventsMap, setEventsMap] = useState<{[key: string]: any}>({})
 
   useEffect(() => {
     const token = localStorage.getItem('authToken')
+    const userId = localStorage.getItem('userId')
+    
     if (!token) {
       router.push('/login')
       return
     }
 
+    if (!userId) {
+      console.error('User ID not found in localStorage')
+      router.push('/login')
+      return
+    }
+
     const name = localStorage.getItem('userName') || 'User'
-    const userId = localStorage.getItem('userId') || '1'
+    const email = localStorage.getItem('userEmail') || ''
+    const role = localStorage.getItem('userRole') || 'USER'
     
     setUserName(name)
-    setUserEmail(`${name.toLowerCase()}@example.com`)
-    setTickets(MOCK_TICKETS)
+    setUserEmail(email)
+    setUserRole(role)
+    
+    loadUserData(userId)
   }, [router])
+
+  const loadUserData = async (userId: string) => {
+    try {
+      setLoading(true)
+      
+      const [userRegs, userTickets] = await Promise.all([
+        registrationApi.getUserRegistrations(userId),
+        ticketsApi.getUserTickets(userId)
+      ]) as [any[], any[]]
+      
+      setRegistrations(userRegs)
+      setTickets(userTickets)
+      
+      const eventIds = [...new Set([...userRegs.map((r: any) => r.eventId), ...userTickets.map((t: any) => t.eventId)])]
+      const events = await Promise.all(eventIds.map(id => eventsApi.getById(id.toString())))
+      
+      const eventsMapping: {[key: string]: any} = {}
+      events.forEach((event: any) => {
+        eventsMapping[event.id] = event
+      })
+      setEventsMap(eventsMapping)
+      
+    } catch (error) {
+      console.error('Failed to load user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -115,7 +125,11 @@ export default function DashboardPage() {
               </Button>
             </div>
 
-            {tickets.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+              </div>
+            ) : tickets.length === 0 ? (
               <Card className="border-2">
                 <CardContent className="py-16 text-center">
                   <Ticket className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -128,47 +142,61 @@ export default function DashboardPage() {
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
-                {tickets.map((ticket) => (
-                  <Card key={ticket.id} className="overflow-hidden border-2 hover:border-primary transition-colors">
-                    <CardHeader className="bg-muted/50 border-b">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl mb-1">{ticket.eventName}</CardTitle>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            {formatDate(ticket.eventDate)}
+                {tickets.map((ticket) => {
+                  const event = eventsMap[ticket.eventId]
+                  return (
+                    <Card key={ticket.id} className="overflow-hidden border-2 hover:border-primary transition-colors shadow-lg">
+                      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-xl mb-1">{event?.title || 'Event'}</CardTitle>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              {event ? formatDate(event.startDate) : 'Date TBD'}
+                            </div>
+                          </div>
+                          <Badge variant={getStatusColor(ticket.status) as any} className="text-xs px-3 py-1">
+                            {ticket.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-6 space-y-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground font-medium">Ticket Number</p>
+                          <p className="font-mono font-bold text-lg">{ticket.ticketNumber}</p>
+                        </div>
+
+                        {ticket.seatNumber && (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground font-medium">Seat Number</p>
+                            <p className="font-semibold text-lg">{ticket.seatNumber}</p>
+                          </div>
+                        )}
+
+                        <div className="bg-gradient-to-br from-muted/50 to-muted p-6 rounded-xl flex justify-center">
+                          <div className="w-40 h-40 bg-background rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                            {ticket.qrCode ? (
+                              <img src={ticket.qrCode} alt="QR Code" className="w-full h-full object-contain" />
+                            ) : (
+                              <QrCode className="w-12 h-12 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
-                        <Badge variant={getStatusColor(ticket.status) as any} className="text-xs px-3 py-1">
-                          {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-6">
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground font-medium">Ticket Number</p>
-                        <p className="font-mono font-bold text-lg">{ticket.ticketNumber}</p>
-                      </div>
 
-                      <div className="bg-gradient-to-br from-muted/50 to-muted p-6 rounded-xl flex justify-center">
-                        <div className="w-40 h-40 bg-background rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                          <QrCode className="w-12 h-12 text-muted-foreground" />
+                        <div className="flex gap-3">
+                          <Button variant="outline" className="flex-1 gap-2 border-2">
+                            <QrCode className="w-4 h-4" />
+                            View QR Code
+                          </Button>
+                          <Button variant="outline" className="flex-1 gap-2 border-2">
+                            <Download className="w-4 h-4" />
+                            Download
+                          </Button>
                         </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button variant="outline" className="flex-1 gap-2 border-2">
-                          <QrCode className="w-4 h-4" />
-                          View QR Code
-                        </Button>
-                        <Button variant="outline" className="flex-1 gap-2 border-2">
-                          <Download className="w-4 h-4" />
-                          Download PDF
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             )}
           </TabsContent>

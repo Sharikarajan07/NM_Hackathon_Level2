@@ -32,12 +32,9 @@ export default function EventGrid({ limit, events: propEvents }: { limit?: numbe
     if (propEvents) {
       setEvents(propEvents)
       setLoading(false)
-    } else {
-      fetchEvents()
+      return
     }
-  }, [propEvents])
 
-  const fetchEvents = async () => {
     const fetchEvents = async () => {
       try {
         setLoading(true)
