@@ -42,6 +42,11 @@ public class TicketService {
             .orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
+    public Ticket getTicketByNumber(String ticketNumber) {
+        return ticketRepository.findByTicketNumber(ticketNumber)
+            .orElseThrow(() -> new RuntimeException("Ticket not found"));
+    }
+
     public void validateTicket(String ticketNumber) {
         Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
             .orElseThrow(() -> new RuntimeException("Ticket not found"));

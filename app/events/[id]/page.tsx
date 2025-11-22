@@ -61,6 +61,50 @@ export default function EventDetailPage() {
     router.push(`/events/${event?.id}/register`)
   }
 
+  const handleShareEvent = async () => {
+    const shareUrl = `${window.location.origin}/events/${event?.id}`
+    const shareData = {
+      title: event?.title || 'Event',
+      text: `Check out this event: ${event?.title}`,
+      url: shareUrl
+    }
+
+    // Try Web Share API first (for mobile devices)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        toast({
+          title: 'Shared Successfully',
+          description: 'Event shared successfully!',
+        })
+      } catch (error: any) {
+        // User cancelled or error occurred
+        if (error.name !== 'AbortError') {
+          copyToClipboard(shareUrl)
+        }
+      }
+    } else {
+      // Fallback to copying to clipboard
+      copyToClipboard(shareUrl)
+    }
+  }
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast({
+        title: 'Link Copied!',
+        description: 'Event link copied to clipboard. Share it with your friends!',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link. Please try again.',
+        variant: 'destructive'
+      })
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -201,7 +245,7 @@ export default function EventDetailPage() {
                   </Button>
                 )}
 
-                <Button variant="outline" className="w-full h-12 gap-2 border-2">
+                <Button variant="outline" className="w-full h-12 gap-2 border-2" onClick={handleShareEvent}>
                   <Share2 className="w-4 h-4" />
                   Share Event
                 </Button>

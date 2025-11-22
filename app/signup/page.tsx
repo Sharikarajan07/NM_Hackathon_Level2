@@ -137,16 +137,16 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-rose-50">
       <Navigation />
 
       <section className="py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
-        <Card className="w-full max-w-2xl shadow-2xl border-2">
+        <Card className="w-full max-w-2xl shadow-2xl border-2 hover:border-violet-300 transition-all">
           <CardHeader className="space-y-2 pb-8">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <UserCircle className="w-10 h-10 text-primary" />
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-full flex items-center justify-center mb-4">
+              <UserCircle className="w-10 h-10 text-white" />
             </div>
-            <CardTitle className="text-3xl text-center">Create Your Account</CardTitle>
+            <CardTitle className="text-3xl text-center bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-600 bg-clip-text text-transparent">Create Your Account</CardTitle>
             <p className="text-muted-foreground text-center text-lg">Join EventHub and discover amazing events</p>
           </CardHeader>
           <CardContent>
@@ -163,12 +163,12 @@ export default function SignupPage() {
                 <div>
                   <Label htmlFor="firstName" className="text-base">First Name</Label>
                   <div className="relative mt-2">
-                    <User className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                    <User className="absolute left-3 top-3 w-5 h-5 text-violet-600" />
                     <Input
                       id="firstName"
                       name="firstName"
                       placeholder="John"
-                      className="pl-10 h-12"
+                      className="pl-10 h-12 border-2 hover:border-violet-300 focus:border-violet-500"
                       value={formData.firstName}
                       onChange={handleChange}
                       required
@@ -179,12 +179,12 @@ export default function SignupPage() {
                 <div>
                   <Label htmlFor="lastName" className="text-base">Last Name</Label>
                   <div className="relative mt-2">
-                    <User className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                    <User className="absolute left-3 top-3 w-5 h-5 text-fuchsia-600" />
                     <Input
                       id="lastName"
                       name="lastName"
                       placeholder="Doe"
-                      className="pl-10 h-12"
+                      className="pl-10 h-12 border-2 hover:border-fuchsia-300 focus:border-fuchsia-500"
                       value={formData.lastName}
                       onChange={handleChange}
                       required
@@ -196,13 +196,13 @@ export default function SignupPage() {
               <div>
                 <Label htmlFor="email" className="text-base">Email Address</Label>
                 <div className="relative mt-2">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-rose-600" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="you@example.com"
-                    className="pl-10 h-12"
+                    className="pl-10 h-12 border-2 hover:border-rose-300 focus:border-rose-500"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -213,7 +213,7 @@ export default function SignupPage() {
               <div>
                 <Label htmlFor="role" className="text-base">Account Type</Label>
                 <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
-                  <SelectTrigger className="h-12 mt-2">
+                  <SelectTrigger className="h-12 mt-2 border-2 hover:border-amber-300">
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,13 +227,13 @@ export default function SignupPage() {
                 <div>
                   <Label htmlFor="password" className="text-base">Password</Label>
                   <div className="relative mt-2">
-                    <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 w-5 h-5 text-violet-600" />
                     <Input
                       id="password"
                       name="password"
                       type="password"
                       placeholder="••••••••"
-                      className="pl-10 h-12"
+                      className="pl-10 h-12 border-2 hover:border-violet-300 focus:border-violet-500"
                       value={formData.password}
                       onChange={handleChange}
                       required
@@ -245,13 +245,13 @@ export default function SignupPage() {
                 <div>
                   <Label htmlFor="confirmPassword" className="text-base">Confirm Password</Label>
                   <div className="relative mt-2">
-                    <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 w-5 h-5 text-fuchsia-600" />
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"
                       placeholder="••••••••"
-                      className="pl-10 h-12"
+                      className="pl-10 h-12 border-2 hover:border-fuchsia-300 focus:border-fuchsia-500"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       required
@@ -263,7 +263,7 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
-                className="w-full h-12 text-base font-semibold"
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-600 hover:from-violet-700 hover:via-fuchsia-700 hover:to-rose-700"
                 size="lg"
                 disabled={isLoading}
               >
@@ -279,7 +279,7 @@ export default function SignupPage() {
 
               <p className="text-center text-sm text-muted-foreground pt-2">
                 Already have an account?{' '}
-                <Link href="/login" className="text-primary hover:underline font-semibold">
+                <Link href="/login" className="text-violet-600 hover:underline font-semibold hover:text-fuchsia-600">
                   Sign in here
                 </Link>
               </p>

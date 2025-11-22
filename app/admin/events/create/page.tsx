@@ -141,19 +141,19 @@ export default function CreateEventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-fuchsia-50">
       <Navigation />
 
       <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent mb-2">
             Create New Event
           </h1>
           <p className="text-muted-foreground text-lg">Fill in the details to create your event</p>
         </div>
 
         <Card className="border-2 shadow-2xl">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+          <CardHeader className="bg-gradient-to-r from-cyan-50 to-purple-50">
             <CardTitle className="text-2xl">Event Details</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -315,7 +315,7 @@ export default function CreateEventPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 h-12 text-base shadow-lg hover:shadow-xl transition-shadow"
+                  className="flex-1 h-12 text-base shadow-lg hover:shadow-xl transition-all bg-teal-600 hover:bg-teal-700"
                   disabled={loading}
                 >
                   {loading ? (

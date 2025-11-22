@@ -4,59 +4,71 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Modern + Solid Theme */
-  --background: #FFFFFF;
-  --foreground: #242425;
+  /* Professional Modern Theme - Teal/Purple/Coral Palette */
+  --background: #F9FAFB;
+  --foreground: #111827;
   --card: #FFFFFF;
-  --card-foreground: #242425;
+  --card-foreground: #111827;
   --popover: #FFFFFF;
-  --popover-foreground: #242425;
-  --primary: #242425;
+  --popover-foreground: #111827;
+  --primary: #0D9488;
   --primary-foreground: #FFFFFF;
-  --secondary: #DED9D3;
-  --secondary-foreground: #242425;
-  --muted: #DED9D3;
-  --muted-foreground: #ACA59B;
-  --accent: #ACA59B;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #1F2937;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #7C3AED;
   --accent-foreground: #FFFFFF;
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
-  --border: #DED9D3;
+  --border: #E5E7EB;
   --input: #FFFFFF;
-  --ring: #242425;
-  --chart-1: #242425;
-  --chart-2: #ACA59B;
-  --chart-3: #DED9D3;
-  --chart-4: #000000;
-  --chart-5: #6B6560;
-  --radius: 0.5rem;
+  --ring: #0D9488;
+  --success: #059669;
+  --success-foreground: #FFFFFF;
+  --warning: #F97316;
+  --warning-foreground: #FFFFFF;
+  --info: #0891B2;
+  --info-foreground: #FFFFFF;
+  --chart-1: #0D9488;
+  --chart-2: #7C3AED;
+  --chart-3: #F97316;
+  --chart-4: #059669;
+  --chart-5: #F59E0B;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: #242425;
-  --foreground: #FFFFFF;
-  --card: #000000;
-  --card-foreground: #FFFFFF;
-  --popover: #000000;
-  --popover-foreground: #FFFFFF;
-  --primary: #FFFFFF;
-  --primary-foreground: #242425;
-  --secondary: #ACA59B;
-  --secondary-foreground: #000000;
-  --muted: #ACA59B;
-  --muted-foreground: #DED9D3;
-  --accent: #DED9D3;
-  --accent-foreground: #242425;
+  --background: #111827;
+  --foreground: #F9FAFB;
+  --card: #1F2937;
+  --card-foreground: #F9FAFB;
+  --popover: #1F2937;
+  --popover-foreground: #F9FAFB;
+  --primary: #14B8A6;
+  --primary-foreground: #111827;
+  --secondary: #374151;
+  --secondary-foreground: #F9FAFB;
+  --muted: #374151;
+  --muted-foreground: #9CA3AF;
+  --accent: #8B5CF6;
+  --accent-foreground: #111827;
   --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --border: #ACA59B;
-  --input: #000000;
-  --ring: #FFFFFF;
-  --chart-1: #FFFFFF;
-  --chart-2: #DED9D3;
-  --chart-3: #ACA59B;
-  --chart-4: #6B6560;
-  --chart-5: #8B8580;
+  --destructive-foreground: #111827;
+  --border: #374151;
+  --input: #1F2937;
+  --ring: #14B8A6;
+  --success: #10B981;
+  --success-foreground: #111827;
+  --warning: #FB923C;
+  --warning-foreground: #111827;
+  --info: #06B6D4;
+  --info-foreground: #111827;
+  --chart-1: #14B8A6;
+  --chart-2: #8B5CF6;
+  --chart-3: #FB923C;
+  --chart-4: #10B981;
+  --chart-5: #FBBF24;
 }
 
 @theme inline {
@@ -99,4 +111,48 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom animations for professional UI */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(20, 184, 166, 0.6);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.5s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

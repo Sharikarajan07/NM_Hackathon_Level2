@@ -86,41 +86,41 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="border-b border-border bg-background/95 sticky top-0 z-50 backdrop-blur-md shadow-sm">
+    <nav className="border-b border-border/40 bg-white/80 sticky top-0 z-50 backdrop-blur-xl shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg group-hover:shadow-primary/50 transition-all">
-              <Calendar className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-purple-600 to-fuchsia-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
+              <Calendar className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent tracking-tight">
+            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight">
               EventHub
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             <Link 
               href="/" 
-              className="flex items-center gap-2 text-foreground hover:text-primary transition font-medium group"
+              className="flex items-center gap-2 text-foreground/80 hover:text-teal-600 transition font-medium group px-3 py-2"
             >
               <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Home
+              <span className="text-sm">Home</span>
             </Link>
             <Link 
               href="/events" 
-              className="flex items-center gap-2 text-foreground hover:text-primary transition font-medium group"
+              className="flex items-center gap-2 text-foreground/80 hover:text-teal-600 transition font-medium group px-3 py-2"
             >
               <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Browse Events
+              <span className="text-sm">Browse Events</span>
             </Link>
             
             {isLoggedIn ? (
               <>
                 {userRole === 'ORGANIZER' && (
                   <Link href="/admin/events">
-                    <Button variant="ghost" className="font-medium gap-2 hover:bg-primary/10">
+                    <Button variant="ghost" className="font-medium gap-2 hover:bg-teal-50 hover:text-teal-600 transition-all text-sm h-9">
                       <Settings className="w-4 h-4" />
                       Manage Events
                     </Button>
@@ -130,52 +130,52 @@ export default function Navigation() {
                 {/* User Profile Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2 hover:bg-primary/10">
-                      <Avatar className="w-8 h-8 border-2 border-primary/20">
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold text-sm">
+                    <Button variant="ghost" className="gap-2 hover:bg-teal-50 hover:text-teal-600 transition-all h-9">
+                      <Avatar className="w-7 h-7 border-2 border-teal-300 shadow-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-teal-600 text-white font-semibold text-xs">
                           {getInitials(userName)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{userName}</span>
+                      <span className="font-medium text-sm">{userName}</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 shadow-xl border-2">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">{userName}</p>
                         <p className="text-xs text-muted-foreground">{userEmail}</p>
-                        <p className="text-xs text-primary font-semibold">{userRole}</p>
+                        <p className="text-xs text-primary font-semibold bg-primary/10 px-2 py-1 rounded-md inline-block w-fit">{userRole}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                      <Link href="/dashboard" className="cursor-pointer hover:bg-primary/10">
+                        <LayoutDashboard className="w-4 h-4 mr-2 text-primary" />
                         My Dashboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/tickets" className="cursor-pointer">
-                        <Ticket className="w-4 h-4 mr-2" />
+                      <Link href="/tickets" className="cursor-pointer hover:bg-primary/10">
+                        <Ticket className="w-4 h-4 mr-2 text-primary" />
                         My Tickets
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
-                        <User className="w-4 h-4 mr-2" />
+                      <Link href="/profile" className="cursor-pointer hover:bg-primary/10">
+                        <User className="w-4 h-4 mr-2 text-primary" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     {userRole === 'ORGANIZER' && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin/events" className="cursor-pointer">
-                          <Settings className="w-4 h-4 mr-2" />
+                        <Link href="/admin/events" className="cursor-pointer hover:bg-primary/10">
+                          <Settings className="w-4 h-4 mr-2 text-accent" />
                           Manage Events
                         </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive hover:bg-destructive/10">
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
                     </DropdownMenuItem>
@@ -185,12 +185,12 @@ export default function Navigation() {
             ) : (
               <div className="flex gap-3">
                 <Link href="/login">
-                  <Button variant="ghost" className="border border-border hover:border-primary hover:bg-primary/5">
+                  <Button variant="ghost" className="border-2 border-border hover:border-primary hover:bg-primary/5 hover:text-primary transition-all shadow-sm">
                     Login
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-primary to-primary/80">
+                  <Button className="shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105">
                     Sign Up
                   </Button>
                 </Link>

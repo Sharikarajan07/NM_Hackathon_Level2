@@ -90,13 +90,13 @@ export default function AdminEventsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-fuchsia-50">
       <Navigation />
 
       <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
               Manage Events
             </h1>
             <p className="text-muted-foreground text-lg mt-2">Create and manage your events</p>
@@ -104,7 +104,7 @@ export default function AdminEventsPage() {
           <Button 
             onClick={() => router.push('/admin/events/create')}
             size="lg" 
-            className="gap-2 shadow-lg hover:shadow-xl transition-shadow"
+            className="gap-2 shadow-lg hover:shadow-xl transition-all bg-teal-600 hover:bg-teal-700"
           >
             <Plus className="w-5 h-5" />
             Create Event
@@ -113,7 +113,7 @@ export default function AdminEventsPage() {
 
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <Loader2 className="w-12 h-12 animate-spin text-purple-600" />
           </div>
         ) : events.length === 0 ? (
           <Card className="border-2 border-dashed">
@@ -121,7 +121,7 @@ export default function AdminEventsPage() {
               <Calendar className="w-16 h-16 text-muted-foreground mb-4" />
               <p className="text-xl font-semibold mb-2">No events yet</p>
               <p className="text-muted-foreground mb-6">Create your first event to get started</p>
-              <Button onClick={() => router.push('/admin/events/create')} className="gap-2">
+              <Button onClick={() => router.push('/admin/events/create')} className="gap-2 bg-teal-600 hover:bg-teal-700">
                 <Plus className="w-4 h-4" />
                 Create Event
               </Button>
@@ -141,10 +141,10 @@ export default function AdminEventsPage() {
                   </div>
                 )}
                 
-                <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+                <CardHeader className="bg-gradient-to-r from-cyan-50 to-purple-50">
                   <div className="flex justify-between items-start gap-3">
                     <CardTitle className="text-xl line-clamp-2">{event.title}</CardTitle>
-                    <Badge variant={event.active ? 'default' : 'secondary'}>
+                    <Badge variant={event.active ? 'default' : 'secondary'} className={event.active ? 'bg-gradient-to-r from-cyan-500 to-purple-500' : ''}>
                       {event.active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
@@ -153,27 +153,27 @@ export default function AdminEventsPage() {
                 <CardContent className="pt-6 space-y-4">
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-4 h-4 text-cyan-600" />
                       <span>{formatDate(event.startDate)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 text-purple-600" />
                       <span className="line-clamp-1">{event.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="w-4 h-4" />
+                      <Users className="w-4 h-4 text-fuchsia-600" />
                       <span>{event.availableTickets} / {event.totalTickets} available</span>
                     </div>
                   </div>
 
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent">
                     ${event.price.toFixed(2)}
                   </div>
 
                   <div className="flex gap-2 pt-2">
                     <Button 
                       variant="outline" 
-                      className="flex-1 gap-2"
+                      className="flex-1 gap-2 border-2 hover:border-purple-400 hover:bg-purple-50"
                       onClick={() => router.push(`/admin/events/edit/${event.id}`)}
                     >
                       <Pencil className="w-4 h-4" />

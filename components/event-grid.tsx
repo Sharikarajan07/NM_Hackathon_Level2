@@ -111,13 +111,18 @@ export default function EventGrid({ limit, events: propEvents }: { limit?: numbe
         const status = getAvailabilityStatus(event.availableTickets, event.totalTickets)
         return (
           <Link key={event.id} href={`/events/${event.id}`}>
-            <Card className="h-full hover:shadow-xl transition-all hover:border-primary border-2 group">
+            <Card className="h-full hover:shadow-xl transition-all hover:border-indigo-400 border-2 group bg-gradient-to-br from-card to-indigo-50/30">
               <CardHeader>
                 <div className="flex justify-between items-start gap-2 mb-3">
-                  <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition">{event.title}</CardTitle>
-                  <Badge variant={status.variant} className="shrink-0">{status.text}</Badge>
+                  <CardTitle className="text-xl line-clamp-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-fuchsia-600 transition">{event.title}</CardTitle>
+                  <Badge 
+                    variant={status.variant} 
+                    className={`shrink-0 ${status.variant === 'default' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700' : ''}`}
+                  >
+                    {status.text}
+                  </Badge>
                 </div>
-                <Badge variant="secondary" className="w-fit text-xs font-medium">{event.category}</Badge>
+                <Badge variant="secondary" className="w-fit text-xs font-medium bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 border border-violet-200">{event.category}</Badge>
               </CardHeader>
               <CardContent>
                 <CardDescription className="line-clamp-3 mb-6 text-base">
@@ -126,25 +131,25 @@ export default function EventGrid({ limit, events: propEvents }: { limit?: numbe
                 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="w-5 h-5 text-primary" />
+                    <Calendar className="w-5 h-5 text-cyan-600" />
                     <span className="font-medium">{formatDate(event.startDate)}</span>
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="w-5 h-5 text-primary" />
+                    <MapPin className="w-5 h-5 text-fuchsia-600" />
                     <span className="truncate">{event.location}</span>
                   </div>
                   
                   <div className="flex items-center gap-3 text-sm">
-                    <Users className="w-5 h-5 text-primary" />
+                    <Users className="w-5 h-5 text-violet-600" />
                     <span>{event.availableTickets} of {event.totalTickets} tickets left</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="text-2xl font-bold text-primary">
+                    <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                       ${event.price.toFixed(2)}
                     </div>
-                    <Button size="sm" variant="outline" className="border-2 group-hover:bg-primary group-hover:text-primary-foreground transition">
+                    <Button size="sm" variant="outline" className="border-2 border-indigo-300 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:text-white group-hover:border-transparent transition">
                       View Details
                     </Button>
                   </div>

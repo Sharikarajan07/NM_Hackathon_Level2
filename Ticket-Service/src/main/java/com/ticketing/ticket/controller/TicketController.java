@@ -36,6 +36,11 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getTicketById(id));
     }
 
+    @GetMapping("/validate/{ticketNumber}")
+    public ResponseEntity<Ticket> getTicketByNumber(@PathVariable String ticketNumber) {
+        return ResponseEntity.ok(ticketService.getTicketByNumber(ticketNumber));
+    }
+
     @PostMapping("/{ticketNumber}/validate")
     public ResponseEntity<Void> validateTicket(@PathVariable String ticketNumber) {
         ticketService.validateTicket(ticketNumber);
