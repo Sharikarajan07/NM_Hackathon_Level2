@@ -247,7 +247,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
-      - STRIPE_API_KEY=${STRIPE_API_KEY:-sk_test_51SWOikFLsPSBrX7m4UfE41D6w0AanIwMgbkYWY1uR6Zzat68uJio4ZWsxmzTFPGiLSvCeFG8cOXueGqPo45HGaZe00jYzDK15p}
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-your_stripe_test_key_here}
     ports:
       - "8086:8086"
 

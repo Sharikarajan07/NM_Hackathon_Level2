@@ -51,10 +51,11 @@ eureka:
 # Stripe Configuration
 stripe:
   api:
-    key: ${STRIPE_API_KEY:sk_test_51SWOikFLsPSBrX7m4UfE41D6w0AanIwMgbkYWY1uR6Zzat68uJio4ZWsxmzTFPGiLSvCeFG8cOXueGqPo45HGaZe00jYzDK15p}
-    # For production, use environment variable: STRIPE_API_KEY
+    key: ${STRIPE_API_KEY:your_stripe_test_key_here}
+    # For production, set STRIPE_API_KEY environment variable
     # Test key format: sk_test_...
     # Live key format: sk_live_...
+    # Get your key from: https://dashboard.stripe.com/test/apikeys
 
 # RabbitMQ Exchange and Queue Configuration
 rabbitmq:
