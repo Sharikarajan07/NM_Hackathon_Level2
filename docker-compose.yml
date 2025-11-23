@@ -85,6 +85,39 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-payment:
+    image: postgres:16-alpine
+    container_name: postgres-payment
+    environment:
+      POSTGRES_DB: paymentdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres-payment-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d paymentdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   eureka:
     build:
       context: ./Eureka-Server
@@ -161,6 +194,8 @@ services:
     depends_on:
       postgres-ticket:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       eureka:
         condition: service_started
     environment:
@@ -168,6 +203,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-ticket:5432/ticketdb
       - SPRING_DATASOURCE_USERNAME=ticketing_user
       - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
     ports:
       - "8084:8084"
 
@@ -188,6 +227,30 @@ services:
     ports:
       - "8085:8085"
 
+  payment-service:
+    build:
+      context: ./Payment-Service
+    container_name: payment-service
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-payment:5432/paymentdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-sk_test_51SWOikFLsPSBrX7m4UfE41D6w0AanIwMgbkYWY1uR6Zzat68uJio4ZWsxmzTFPGiLSvCeFG8cOXueGqPo45HGaZe00jYzDK15p}
+    ports:
+      - "8086:8086"
+
   frontend:
     build:
       context: .
@@ -199,6 +262,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - NEXT_PUBLIC_BASE_URL=http://10.74.115.219:3000
 
 networks:
   default:
@@ -210,3 +274,4 @@ volumes:
   postgres-registration-data:
   postgres-ticket-data:
   postgres-notification-data:
+  postgres-payment-data:

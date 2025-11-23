@@ -129,9 +129,10 @@ export default function DashboardPage() {
 
   const generateTicketQRData = (ticket: any) => {
     // Encode ticket and event data in URL for offline validation
-    const baseUrl = typeof window !== 'undefined' 
-      ? `${window.location.protocol}//${window.location.host}`
-      : 'http://localhost:3000'
+    // Use environment variable for network-accessible URL or fallback to window location
+    const baseUrl = typeof window !== 'undefined'
+      ? (process.env.NEXT_PUBLIC_BASE_URL || `${window.location.protocol}//${window.location.hostname}:3000`)
+      : 'http://10.74.115.219:3000'
     
     const event = eventsMap[ticket.eventId]
     const ticketData = {

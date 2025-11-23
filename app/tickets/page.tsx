@@ -43,20 +43,56 @@ export default function TicketsPage() {
     try {
       setLoading(true)
       
+      console.log('🎫 Loading tickets for userId:', userId)
+      
       const userTickets = await ticketsApi.getUserTickets(userId) as any[]
-      setTickets(userTickets)
+      console.log('📦 Received tickets:', userTickets)
+      console.log('📊 Number of tickets:', userTickets?.length || 0)
       
-      const eventIds = [...new Set(userTickets.map((t: any) => t.eventId))]
-      const events = await Promise.all(eventIds.map(id => eventsApi.getById(id.toString())))
+      setTickets(userTickets || [])
       
-      const eventsMapping: {[key: string]: any} = {}
-      events.forEach((event: any) => {
-        eventsMapping[event.id] = event
+      if (userTickets && userTickets.length > 0) {
+        const eventIds = [...new Set(userTickets.map((t: any) => t.eventId))]
+        console.log('🎭 Loading events for IDs:', eventIds)
+        
+        const eventsMapping: {[key: string]: any} = {}
+        
+        // Load events individually with error handling
+        await Promise.all(eventIds.map(async (id) => {
+          try {
+            const event = await eventsApi.getById(id.toString())
+            console.log('✅ Loaded event:', event)
+            eventsMapping[id] = event
+          } catch (error) {
+            console.error(`⚠️ Failed to load event ${id}, using fallback:`, error)
+            // Create fallback event object
+            eventsMapping[id] = {
+              id: id,
+              title: `Event #${id}`,
+              startDate: new Date().toISOString(),
+              location: 'Location TBD',
+              description: 'Event details unavailable'
+            }
+          }
+        }))
+        
+        console.log('📋 Final events mapping:', eventsMapping)
+        setEventsMap(eventsMapping)
+      }
+      
+      toast({
+        title: 'Tickets Loaded',
+        description: `Found ${userTickets?.length || 0} ticket(s)`,
       })
-      setEventsMap(eventsMapping)
       
-    } catch (error) {
-      console.error('Failed to load tickets:', error)
+    } catch (error: any) {
+      console.error('❌ Failed to load tickets:', error)
+      console.error('Error details:', error.message, error.response)
+      toast({
+        title: 'Error Loading Tickets',
+        description: error.message || 'Failed to load tickets. Please try again.',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -108,31 +144,55 @@ export default function TicketsPage() {
   }
 
   const handleViewQRCode = (ticket: any) => {
-    setSelectedTicket(ticket)
-    setQrDialogOpen(true)
+    try {
+      if (!ticket) {
+        console.error('No ticket provided')
+        toast({
+          title: 'Error',
+          description: 'Invalid ticket data',
+          variant: 'destructive'
+        })
+        return
+      }
+      setSelectedTicket(ticket)
+      setQrDialogOpen(true)
+    } catch (error) {
+      console.error('Error viewing QR code:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to display QR code',
+        variant: 'destructive'
+      })
+    }
   }
 
   const generateTicketQRData = (ticket: any) => {
-    // Encode ticket and event data in URL for offline validation
-    const baseUrl = typeof window !== 'undefined' 
-      ? `${window.location.protocol}//${window.location.host}`
-      : 'http://localhost:3000'
-    
-    const event = eventsMap[ticket.eventId]
-    const ticketData = {
-      tn: ticket.ticketNumber,
-      ei: ticket.eventId,
-      et: event?.title || 'Event',
-      ed: event?.startDate || '',
-      el: event?.location || '',
-      s: ticket.status,
-      p: ticket.price || 0,
-      ui: ticket.userId
+    try {
+      // Encode ticket and event data in URL for offline validation
+      // Use environment variable for network-accessible URL or fallback to window location
+      const baseUrl = typeof window !== 'undefined'
+        ? (process.env.NEXT_PUBLIC_BASE_URL || `${window.location.protocol}//${window.location.hostname}:3000`)
+        : 'http://10.74.115.219:3000'
+      
+      const event = eventsMap[ticket.eventId]
+      const ticketData = {
+        tn: ticket.ticketNumber || '',
+        ei: ticket.eventId || '',
+        et: event?.title || 'Event',
+        ed: event?.startDate || '',
+        el: event?.location || '',
+        s: ticket.status || 'active',
+        p: ticket.price || 0,
+        ui: ticket.userId || ''
+      }
+      
+      // Encode data as base64 to keep URL clean
+      const encoded = typeof window !== 'undefined' ? btoa(JSON.stringify(ticketData)) : ''
+      return `${baseUrl}/validate/${ticket.ticketNumber || 'TICKET'}?d=${encoded}`
+    } catch (error) {
+      console.error('Error generating QR data:', error)
+      return `http://10.74.115.219:3000/tickets`
     }
-    
-    // Encode data as base64 to keep URL clean
-    const encoded = btoa(JSON.stringify(ticketData))
-    return `${baseUrl}/validate/${ticket.ticketNumber}?d=${encoded}`
   }
 
   const handleDownloadTicket = async (ticket: any, ticketCount: number = 1) => {
@@ -590,15 +650,16 @@ export default function TicketsPage() {
               {groupedTicketsList.map((group) => {
                 const event = eventsMap[group.eventId]
                 const ticket = group.firstTicket
+                
                 return (
                   <Card key={group.eventId} className="overflow-hidden border-2 border-slate-200 hover:border-fuchsia-400 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 bg-gradient-to-br from-white to-slate-50/50">
                     <CardHeader className="bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-orange-500/10 border-b-2 border-slate-200">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <CardTitle className="text-xl mb-1 text-slate-800">{event?.title || 'Event'}</CardTitle>
+                          <CardTitle className="text-xl mb-1 text-slate-800">{event?.title || `Event #${group.eventId}`}</CardTitle>
                           <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
                             <Calendar className="w-4 h-4 text-fuchsia-600" />
-                            {event ? formatDate(event.startDate) : 'Date TBD'}
+                            {event?.startDate ? formatDate(event.startDate) : 'Date TBD'}
                           </div>
                         </div>
                         <Badge variant={getStatusColor(ticket.status) as any} className="text-xs px-3 py-1 font-semibold shadow-sm">
@@ -684,13 +745,15 @@ export default function TicketsPage() {
             <div className="flex flex-col items-center space-y-4 py-6">
               {/* QR Code with embedded ticket data */}
               <div className="p-6 bg-white rounded-lg shadow-lg border-2 border-violet-200">
-                <QRCodeSVG 
-                  value={generateTicketQRData(selectedTicket)}
-                  size={240}
-                  level="H"
-                  includeMargin={true}
-                  className="w-full h-auto"
-                />
+                {typeof window !== 'undefined' && (
+                  <QRCodeSVG 
+                    value={generateTicketQRData(selectedTicket)}
+                    size={240}
+                    level="H"
+                    includeMargin={true}
+                    className="w-full h-auto"
+                  />
+                )}
               </div>
               
               <p className="text-xs text-slate-500 text-center px-4">

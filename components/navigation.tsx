@@ -13,7 +13,8 @@ import {
   User, 
   Menu,
   X,
-  Home
+  Home,
+  CreditCard
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -158,6 +159,12 @@ export default function Navigation() {
                       <Link href="/tickets" className="cursor-pointer hover:bg-primary/10">
                         <Ticket className="w-4 h-4 mr-2 text-primary" />
                         My Tickets
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/payment-records" className="cursor-pointer hover:bg-primary/10">
+                        <CreditCard className="w-4 h-4 mr-2 text-primary" />
+                        Payment Records
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

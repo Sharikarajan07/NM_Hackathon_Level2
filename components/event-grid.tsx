@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ interface Event {
   price: number
   organizer?: string
   active?: boolean
+  imageUrl?: string
 }
 
 export default function EventGrid({ limit, events: propEvents }: { limit?: number, events?: Event[] }) {
@@ -111,21 +113,52 @@ export default function EventGrid({ limit, events: propEvents }: { limit?: numbe
         const status = getAvailabilityStatus(event.availableTickets, event.totalTickets)
         return (
           <Link key={event.id} href={`/events/${event.id}`}>
-            <Card className="h-full hover:shadow-xl transition-all hover:border-indigo-400 border-2 group bg-gradient-to-br from-card to-indigo-50/30">
-              <CardHeader>
-                <div className="flex justify-between items-start gap-2 mb-3">
-                  <CardTitle className="text-xl line-clamp-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-fuchsia-600 transition">{event.title}</CardTitle>
+            <Card className="h-full hover:shadow-xl transition-all hover:border-indigo-400 border-2 group overflow-hidden">
+              {/* Event Image */}
+              {event.imageUrl ? (
+                <div className="relative w-full h-48 overflow-hidden">
+                  <img 
+                    src={event.imageUrl} 
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      // Fallback to gradient if image fails to load
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).parentElement!.classList.add('bg-gradient-to-br', 'from-cyan-500', 'via-purple-500', 'to-fuchsia-500');
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                   <Badge 
                     variant={status.variant} 
-                    className={`shrink-0 ${status.variant === 'default' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700' : ''}`}
+                    className={`absolute top-3 right-3 shadow-lg ${status.variant === 'default' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700' : ''}`}
                   >
                     {status.text}
                   </Badge>
+                  <Badge variant="secondary" className="absolute bottom-3 left-3 text-xs font-medium bg-white/90 backdrop-blur-sm text-violet-700 border border-violet-200 shadow-lg">
+                    {event.category}
+                  </Badge>
                 </div>
-                <Badge variant="secondary" className="w-fit text-xs font-medium bg-gradient-to-r from-violet-100 to-purple-100 text-violet-700 border border-violet-200">{event.category}</Badge>
+              ) : (
+                <div className="relative w-full h-48 bg-gradient-to-br from-cyan-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
+                  <Calendar className="w-16 h-16 text-white/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <Badge 
+                    variant={status.variant} 
+                    className={`absolute top-3 right-3 shadow-lg ${status.variant === 'default' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700' : ''}`}
+                  >
+                    {status.text}
+                  </Badge>
+                  <Badge variant="secondary" className="absolute bottom-3 left-3 text-xs font-medium bg-white/90 backdrop-blur-sm text-violet-700 border border-violet-200 shadow-lg">
+                    {event.category}
+                  </Badge>
+                </div>
+              )}
+              
+              <CardHeader>
+                <CardTitle className="text-xl line-clamp-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-fuchsia-600 transition">{event.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="line-clamp-3 mb-6 text-base">
+                <CardDescription className="line-clamp-2 mb-6 text-base">
                   {event.description}
                 </CardDescription>
                 

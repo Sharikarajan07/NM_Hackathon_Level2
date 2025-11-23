@@ -288,7 +288,7 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="imageUrl" className="text-base font-semibold flex items-center gap-2">
                   <ImageIcon className="w-4 h-4" />
                   Image URL (Optional)
@@ -298,9 +298,45 @@ export default function CreateEventPage() {
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => handleChange('imageUrl', e.target.value)}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://images.unsplash.com/photo-xxx?w=800"
                   className="h-12 text-base"
                 />
+                <p className="text-sm text-muted-foreground">
+                  Paste an image URL from Unsplash or any image hosting service
+                </p>
+                
+                {/* Live Image Preview */}
+                {formData.imageUrl && (
+                  <div className="mt-4 rounded-lg overflow-hidden border-2 border-slate-200 bg-slate-50">
+                    <div className="bg-gradient-to-r from-cyan-50 to-purple-50 px-4 py-2 border-b">
+                      <p className="text-sm font-semibold text-slate-700">Image Preview</p>
+                    </div>
+                    <div className="p-4">
+                      <div className="relative aspect-[16/9] w-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+                        <img 
+                          src={formData.imageUrl} 
+                          alt="Event preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none'
+                            const parent = (e.target as HTMLImageElement).parentElement
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="flex flex-col items-center justify-center h-full text-slate-500">
+                                  <svg class="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                  </svg>
+                                  <p class="font-medium">Invalid image URL</p>
+                                  <p class="text-sm">Please check the URL and try again</p>
+                                </div>
+                              `
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">

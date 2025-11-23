@@ -23,6 +23,9 @@ public class GatewayConfig {
             .route("ticket-service", r -> r
                 .path("/api/tickets/**")
                 .uri("lb://TICKET-SERVICE"))
+            .route("payment-service", r -> r
+                .path("/api/payments/**")
+                .uri("lb://PAYMENT-SERVICE"))
             .route("notification-service", r -> r
                 .path("/api/notifications/**")
                 .uri("lb://NOTIFICATION-SERVICE"))

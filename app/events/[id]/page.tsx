@@ -48,6 +48,22 @@ export default function EventDetailPage() {
   }
 
   const handleRegister = () => {
+    // Navigate to payment page with event details
+    if (event) {
+      const params = new URLSearchParams({
+        eventId: event.id,
+        eventName: event.title,
+        eventDate: formatDate(event.startDate),
+        location: event.location,
+        price: event.price.toString(),
+        ticketType: 'General Admission',
+        quantity: '1'
+      });
+      router.push(`/payment?${params.toString()}`);
+    }
+  };
+
+  const handleRegisterOld = () => {
     const token = localStorage.getItem('authToken')
     if (!token) {
       toast({
@@ -147,15 +163,36 @@ export default function EventDetailPage() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            {event.imageUrl && (
-              <div className="mb-8 rounded-xl overflow-hidden shadow-2xl">
-                <img src={event.imageUrl} alt={event.title} className="w-full h-96 object-cover" />
+            {/* Event Hero Image */}
+            {event.imageUrl ? (
+              <div className="relative mb-8 rounded-2xl overflow-hidden shadow-2xl group">
+                <div className="aspect-[16/9] w-full">
+                  <img 
+                    src={event.imageUrl} 
+                    alt={event.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).parentElement!.classList.add('bg-gradient-to-br', 'from-cyan-500', 'via-purple-500', 'to-fuchsia-500', 'flex', 'items-center', 'justify-center');
+                    }}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <Badge variant="secondary" className="absolute top-6 right-6 text-base px-4 py-2 bg-white/95 backdrop-blur-sm shadow-xl">
+                  {event.category}
+                </Badge>
+              </div>
+            ) : (
+              <div className="relative mb-8 rounded-2xl overflow-hidden shadow-2xl aspect-[16/9] bg-gradient-to-br from-cyan-500 via-purple-500 to-fuchsia-500 flex items-center justify-center">
+                <Calendar className="w-24 h-24 text-white/20" />
+                <Badge variant="secondary" className="absolute top-6 right-6 text-base px-4 py-2 bg-white/95 backdrop-blur-sm shadow-xl">
+                  {event.category}
+                </Badge>
               </div>
             )}
 
             <div className="mb-8">
-              <Badge variant="secondary" className="mb-4 text-base px-4 py-1">{event.category}</Badge>
-              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
                 {event.title}
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">{event.description}</p>
