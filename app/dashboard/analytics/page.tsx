@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navigation from '@/components/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, TrendingUp, Calendar, Ticket, DollarSign, Users, Activity } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { ArrowLeft, TrendingUp, Calendar, Ticket, DollarSign, Users, Activity, BarChart3, PieChart, Target } from 'lucide-react'
 import { registrationApi, ticketsApi, eventsApi } from '@/lib/api-client'
 
 export default function AnalyticsPage() {
@@ -15,6 +15,7 @@ export default function AnalyticsPage() {
   const [registrations, setRegistrations] = useState<any[]>([])
   const [totalSpent, setTotalSpent] = useState(0)
   const [upcomingEvents, setUpcomingEvents] = useState(0)
+  const [eventsMap, setEventsMap] = useState<{[key: string]: any}>({})
 
   useEffect(() => {
     const token = localStorage.getItem('authToken')
@@ -51,10 +52,18 @@ export default function AnalyticsPage() {
       }, 0)
       setTotalSpent(total)
 
-      // Calculate upcoming events
-      const now = new Date()
+      // Get events data
       const eventIds = [...new Set(userTickets.map((t: any) => t.eventId))]
       const events = await Promise.all(eventIds.map(id => eventsApi.getById(id.toString())))
+      
+      const eventsMapping: {[key: string]: any} = {}
+      events.forEach((event: any) => {
+        eventsMapping[event.id] = event
+      })
+      setEventsMap(eventsMapping)
+      
+      // Calculate upcoming events
+      const now = new Date()
       const upcoming = events.filter((event: any) => new Date(event.startDate) > now).length
       setUpcomingEvents(upcoming)
       
@@ -84,22 +93,22 @@ export default function AnalyticsPage() {
   const monthlyStats = getMonthlyStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-fuchsia-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50/40 to-pink-50/30">
       <Navigation />
 
       <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="mb-8 animate-fade-in">
+        <div className="mb-8">
           <Button
             variant="ghost"
             onClick={() => router.push('/dashboard')}
-            className="mb-4 gap-2 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+            className="mb-4 gap-2 hover:bg-purple-50 hover:text-purple-600 transition-colors font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
           
-          <h1 className="text-5xl md:text-6xl font-bold mb-3 bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Analytics</h1>
-          <p className="text-slate-600 text-xl font-medium">Track your event engagement and spending patterns</p>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Analytics Dashboard</h1>
+          <p className="text-slate-600 text-lg font-medium">Track your event engagement and performance insights</p>
         </div>
 
         {/* Key Metrics */}

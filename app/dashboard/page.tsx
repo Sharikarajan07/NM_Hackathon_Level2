@@ -2,13 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import Navigation from '@/components/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Calendar, Download, QrCode, Ticket, User, Plus, Loader2, Bell } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { 
+  Calendar, Download, QrCode, Ticket, User, Plus, Loader2, Bell, 
+  TrendingUp, Activity, Eye, MapPin, Clock, CheckCircle2, 
+  AlertCircle, Users, BarChart3, ArrowRight, Sparkles, ChevronRight,
+  History, Target, Award, TrendingDown, Zap
+} from 'lucide-react'
 import { registrationApi, ticketsApi, eventsApi } from '@/lib/api-client'
 import { useToast } from '@/hooks/use-toast'
 import { QRCodeSVG } from 'qrcode.react'
@@ -595,111 +602,215 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-purple-50 to-fuchsia-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50/40 to-pink-50/30">
       <Navigation />
 
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-cyan-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Welcome back, {userName}!
-              </h1>
-              <p className="text-slate-600 text-lg font-medium">Quick access to all your event management tools</p>
-            </div>
-            {userRole === 'ADMIN' && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg">
-                <Plus className="w-4 h-4 text-red-600" />
-                <span className="font-bold text-sm text-red-700">Admin Access</span>
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Executive Header */}
+        <div className="mb-12">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-10">
+            <div className="flex items-start gap-5">
+              <div className="relative">
+                <Avatar className="w-20 h-20 border-4 border-white shadow-2xl ring-2 ring-purple-100">
+                  <AvatarFallback className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white text-2xl font-bold">
+                    {userName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-white shadow-lg" />
               </div>
-            )}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Welcome back, {userName}
+                  </h1>
+                  {userRole === 'ADMIN' && (
+                    <Badge className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 border-0 px-3 py-1.5 text-white font-semibold shadow-lg">
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                      ADMIN
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-medium">{userEmail}</span>
+                  </div>
+                  <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-300" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-sm text-emerald-600 font-semibold">Online</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button 
+                variant="outline" 
+                className="border-2 border-purple-200 hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 font-semibold shadow-sm hover:shadow-md"
+                onClick={() => router.push('/profile')}
+              >
+                <User className="w-4 h-4 mr-2" />
+                My Profile
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                onClick={() => router.push('/events')}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Explore Events
+              </Button>
+            </div>
           </div>
 
-          {/* Quick Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-lg p-3 shadow-md">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <Ticket className="w-4 h-4 text-white" />
+          {/* Quick Stats Bar */}
+          <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                  <Eye className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Tickets</p>
-                  <p className="text-xl font-bold text-slate-800">{tickets.length}</p>
+                  <p className="text-xs text-slate-500 font-medium">Profile Views</p>
+                  <p className="text-lg font-bold text-slate-900">1,284</p>
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-lg p-3 shadow-md">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+                  <Target className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Events</p>
-                  <p className="text-xl font-bold text-slate-800">{registrations.length}</p>
+                  <p className="text-xs text-slate-500 font-medium">Completion</p>
+                  <p className="text-lg font-bold text-slate-900">87%</p>
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-lg p-3 shadow-md">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg">
+                  <Award className="w-4 h-4 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Status</p>
-                  <p className="text-sm font-bold text-emerald-600">Active</p>
+                  <p className="text-xs text-slate-500 font-medium">Points Earned</p>
+                  <p className="text-lg font-bold text-slate-900">2,450</p>
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm border-2 border-slate-200 rounded-lg p-3 shadow-md">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg">
+                  <Zap className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-medium">Updates</p>
-                  <p className="text-xl font-bold text-slate-800">0</p>
+                  <p className="text-xs text-slate-500 font-medium">Streak</p>
+                  <p className="text-lg font-bold text-slate-900">12 Days</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Navigation Cards */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-4">Navigation</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card 
-              className="group relative overflow-hidden border-2 border-cyan-200 hover:border-cyan-400 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white via-white to-cyan-50/30"
-              onClick={() => router.push('/')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/5 group-hover:from-cyan-500/5 group-hover:to-cyan-500/10 transition-all duration-300" />
-              <CardContent className="relative pt-6 pb-6">
-                <div className="flex flex-col items-center text-center gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                    <Calendar className="w-8 h-8 text-white" />
+          {/* Enterprise Analytics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Tickets Metric */}
+            <Card className="relative overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-xl hover:border-slate-400 hover:-translate-y-1 bg-white transition-all duration-300 group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-700 to-slate-900" />
+              <CardContent className="relative p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors duration-300">
+                    <Ticket className="w-4 h-4 text-slate-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={2} />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-slate-800 mb-1">Home</h3>
-                    <p className="text-xs text-slate-600 font-medium">Browse all events</p>
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 rounded-md group-hover:bg-emerald-100 transition-colors duration-300">
+                    <TrendingUp className="w-3 h-3 text-emerald-600" />
+                    <span className="text-xs font-semibold text-emerald-700">+12%</span>
                   </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Total Tickets</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-0.5 group-hover:scale-105 transition-transform duration-300">{tickets.length}</p>
+                  <p className="text-xs text-slate-600">Active in collection</p>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Events Registered Metric */}
+            <Card className="relative overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-xl hover:border-slate-400 hover:-translate-y-1 bg-white transition-all duration-300 group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-700 to-slate-900" />
+              <CardContent className="relative p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors duration-300">
+                    <Calendar className="w-4 h-4 text-slate-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={2} />
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 rounded-md group-hover:bg-blue-100 transition-colors duration-300">
+                    <Activity className="w-3 h-3 text-blue-600" />
+                    <span className="text-xs font-semibold text-blue-700">Live</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Events Joined</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-0.5 group-hover:scale-105 transition-transform duration-300">{registrations.length}</p>
+                  <p className="text-xs text-slate-600">Total registrations</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Account Status Metric */}
+            <Card className="relative overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-xl hover:border-slate-400 hover:-translate-y-1 bg-white transition-all duration-300 group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-700 to-slate-900" />
+              <CardContent className="relative p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors duration-300">
+                    <CheckCircle2 className="w-4 h-4 text-slate-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={2} />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Account Status</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-0.5 group-hover:scale-105 transition-transform duration-300">Active</p>
+                  <p className="text-xs text-slate-600">Verified & secured</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications Metric */}
+            <Card className="relative overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-xl hover:border-slate-400 hover:-translate-y-1 bg-white transition-all duration-300 group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-700 to-slate-900" />
+              <CardContent className="relative p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors duration-300">
+                    <Bell className="w-4 h-4 text-slate-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={2} />
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded-md group-hover:bg-slate-200 transition-colors duration-300">
+                    <AlertCircle className="w-3 h-3 text-slate-600" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Notifications</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-0.5 group-hover:scale-105 transition-transform duration-300">0</p>
+                  <p className="text-xs text-slate-600">All caught up</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Quick Actions Hub */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
+            </div>
+            <Badge variant="outline" className="border border-teal-300 bg-teal-50 text-teal-700 px-3 py-1 text-xs font-semibold">
+              {userRole}
+            </Badge>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* My Tickets Hub */}
             <Card 
-              className="group relative overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white via-white to-purple-50/30"
+              className="group relative cursor-pointer border border-slate-200 hover:border-teal-400 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
               onClick={() => router.push('/tickets')}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/5 group-hover:from-purple-500/5 group-hover:to-purple-500/10 transition-all duration-300" />
-              <CardContent className="relative pt-6 pb-6">
+              <CardContent className="relative p-5">
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="relative">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                      <Ticket className="w-8 h-8 text-white" />
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                      <Ticket className="w-7 h-7 text-white" strokeWidth={2} />
                     </div>
                     {tickets.length > 0 && (
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-white shadow-md">
@@ -708,70 +819,85 @@ export default function DashboardPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-xl text-slate-800 mb-1">My Tickets</h3>
-                    <p className="text-xs text-slate-600 font-medium">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</p>
+                    <h3 className="font-semibold text-base text-slate-900 mb-1">My Tickets</h3>
+                    <p className="text-xs text-slate-600">{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Browse Events Hub */}
             <Card 
-              className="group relative overflow-hidden border-2 border-fuchsia-200 hover:border-fuchsia-400 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white via-white to-fuchsia-50/30"
+              className="group relative cursor-pointer border border-slate-200 hover:border-cyan-400 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
+              onClick={() => router.push('/events')}
+            >
+              <CardContent className="relative p-5">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                    <Calendar className="w-7 h-7 text-white" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-base text-slate-900 mb-1">Browse Events</h3>
+                    <p className="text-xs text-slate-600">Discover events</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Profile Management Hub */}
+            <Card 
+              className="group relative cursor-pointer border border-slate-200 hover:border-emerald-400 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
               onClick={() => router.push('/profile')}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/0 to-fuchsia-500/5 group-hover:from-fuchsia-500/5 group-hover:to-fuchsia-500/10 transition-all duration-300" />
-              <CardContent className="relative pt-6 pb-6">
+              <CardContent className="relative p-5">
                 <div className="flex flex-col items-center text-center gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                    <User className="w-8 h-8 text-white" />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                    <User className="w-7 h-7 text-white" strokeWidth={2} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-xl text-slate-800 mb-1">Profile</h3>
-                    <p className="text-xs text-slate-600 font-medium">Manage settings</p>
+                    <h3 className="font-semibold text-base text-slate-900 mb-1">My Profile</h3>
+                    <p className="text-xs text-slate-600">Account settings</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card 
-              className="group relative overflow-hidden border-2 border-teal-200 hover:border-teal-400 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white via-white to-teal-50/30"
-              onClick={() => router.push('/dashboard/analytics')}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-teal-500/0 to-teal-500/5 group-hover:from-teal-500/5 group-hover:to-teal-500/10 transition-all duration-300" />
-              <CardContent className="relative pt-6 pb-6">
-                <div className="flex flex-col items-center text-center gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xl text-slate-800 mb-1">Analytics</h3>
-                    <p className="text-xs text-slate-600 font-medium">View insights</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {userRole === 'ADMIN' && (
+            {/* Admin/Analytics Hub */}
+            {userRole === 'ADMIN' ? (
               <Card 
-                className="group relative overflow-hidden border-2 border-amber-200 hover:border-amber-400 transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white via-white to-amber-50/30 md:col-span-2 lg:col-span-1"
-                onClick={() => router.push('/dashboard/user-management')}
+                className="group relative cursor-pointer border border-amber-300 hover:border-amber-500 bg-gradient-to-br from-amber-50 to-orange-50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
+                onClick={() => router.push('/admin/events')}
               >
                 <div className="absolute top-2 right-2">
-                  <div className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">ADMIN</div>
+                  <div className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                    ADMIN
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/5 group-hover:from-amber-500/5 group-hover:to-amber-500/10 transition-all duration-300" />
-                <CardContent className="relative pt-6 pb-6">
+                <CardContent className="relative p-5">
                   <div className="flex flex-col items-center text-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                      <Users className="w-7 h-7 text-white" strokeWidth={2} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl text-slate-800 mb-1">User Management</h3>
-                      <p className="text-xs text-slate-600 font-medium">Admin controls</p>
+                      <h3 className="font-semibold text-base text-slate-900 mb-1">Admin Panel</h3>
+                      <p className="text-xs text-slate-600">Manage platform</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card 
+                className="group relative cursor-pointer border border-slate-200 hover:border-teal-400 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
+                onClick={() => router.push('/dashboard/analytics')}
+              >
+                <CardContent className="relative p-5">
+                  <div className="flex flex-col items-center text-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
+                      <BarChart3 className="w-7 h-7 text-white" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-base text-slate-900 mb-1">Analytics</h3>
+                      <p className="text-xs text-slate-600">View insights</p>
                     </div>
                   </div>
                 </CardContent>
@@ -780,88 +906,270 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Activity Summary */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card className="border-2 border-slate-200 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-            <CardHeader className="bg-gradient-to-br from-purple-50 to-white border-b border-slate-100 py-3">
-              <CardTitle className="text-base flex items-center gap-2 text-slate-700">
-                <Ticket className="w-4 h-4 text-purple-600" />
-                Tickets Overview
+        {/* Activity & Events Section */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          {/* Recent Activity Timeline */}
+          <Card className="lg:col-span-2 border border-slate-200 shadow-sm bg-white">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2 text-slate-900 font-bold">
+                  <History className="w-5 h-5 text-teal-600" />
+                  Recent Activity
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
+                  View All
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-5">
+              <div className="space-y-4">
+                {/* Activity Item 1 */}
+                <div className="flex gap-4 group hover:bg-slate-50 p-3 rounded-lg transition-colors">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm">
+                      <Ticket className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">Ticket Generated Successfully</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Your ticket for Tech Conference 2025 is ready</p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      2 hours ago
+                    </p>
+                  </div>
+                </div>
+
+                {/* Activity Item 2 */}
+                <div className="flex gap-4 group hover:bg-slate-50 p-3 rounded-lg transition-colors">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-sm">
+                      <Calendar className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">Registered for New Event</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Successfully registered for Design Workshop</p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      5 hours ago
+                    </p>
+                  </div>
+                </div>
+
+                {/* Activity Item 3 */}
+                <div className="flex gap-4 group hover:bg-slate-50 p-3 rounded-lg transition-colors">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
+                      <Award className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">Achievement Unlocked</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Earned 'Early Bird' badge for event participation</p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      1 day ago
+                    </p>
+                  </div>
+                </div>
+
+                {/* Activity Item 4 */}
+                <div className="flex gap-4 group hover:bg-slate-50 p-3 rounded-lg transition-colors">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">Profile Updated</p>
+                    <p className="text-xs text-slate-600 mt-0.5">Your profile information has been updated</p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      2 days ago
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Upcoming Events Panel */}
+          <Card className="border border-slate-200 shadow-sm bg-white">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg flex items-center gap-2 text-slate-900 font-bold">
+                <Calendar className="w-5 h-5 text-teal-600" />
+                Upcoming Events
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-600 font-medium">Total Owned</span>
-                  <span className="text-xl font-bold text-slate-800">{tickets.length}</span>
+            <CardContent className="pt-5">
+              <div className="space-y-4">
+                {registrations.slice(0, 3).map((reg, idx) => {
+                  const event = eventsMap[reg.eventId]
+                  if (!event) return null
+                  
+                  return (
+                    <div key={idx} className="p-3 bg-gradient-to-br from-teal-50/50 to-cyan-50/50 rounded-lg border border-teal-100 hover:border-teal-300 transition-colors cursor-pointer group"
+                      onClick={() => router.push(`/events/${event.id}`)}>
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                          <Calendar className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 truncate">{event.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="w-3 h-3 text-slate-400" />
+                            <p className="text-xs text-slate-600">{formatDate(event.date)}</p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            <p className="text-xs text-slate-600 truncate">{event.location}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                
+                {registrations.length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+                      <Calendar className="w-8 h-8 text-slate-400" />
+                    </div>
+                    <p className="text-sm text-slate-600 mb-3">No upcoming events</p>
+                    <Button 
+                      size="sm" 
+                      className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                      onClick={() => router.push('/events')}
+                    >
+                      Browse Events
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Performance Dashboard */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="relative border-0 shadow-xl bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-purple-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/0 via-purple-50/30 to-purple-50/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative bg-gradient-to-br from-purple-50/50 via-white to-white border-b-2 border-purple-100/50 pb-4">
+              <CardTitle className="text-lg flex items-center gap-3 text-slate-900 font-bold">
+                <div className="p-2.5 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl shadow-lg">
+                  <Ticket className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                Tickets Portfolio
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative pt-6 pb-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600 font-semibold">Total Collection</span>
+                  <span className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-700 bg-clip-text text-transparent">{tickets.length}</span>
+                </div>
+                <div className="relative w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
                   <div 
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full transition-all duration-500"
+                    className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-purple-700 rounded-full transition-all duration-700 shadow-lg"
                     style={{ width: tickets.length > 0 ? '100%' : '0%' }}
-                  />
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-600 bg-purple-50 px-3 py-2 rounded-lg border border-purple-100">
+                  <TrendingUp className="w-4 h-4 text-purple-600" />
+                  <span className="font-semibold">Active & Ready</span>
                 </div>
                 <Button 
                   onClick={() => router.push('/tickets')}
-                  className="w-full mt-2 bg-teal-600 hover:bg-teal-700 transition-colors text-sm h-9"
+                  className="w-full mt-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-purple-700 hover:from-indigo-700 hover:via-purple-700 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-base h-11"
                 >
                   View All Tickets
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-slate-200 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-            <CardHeader className="bg-gradient-to-br from-cyan-50 to-white border-b border-slate-100 py-3">
-              <CardTitle className="text-base flex items-center gap-2 text-slate-700">
-                <Calendar className="w-4 h-4 text-cyan-600" />
-                Event Registrations
+          <Card className="relative border-0 shadow-xl bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-blue-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/0 via-cyan-50/30 to-cyan-50/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative bg-gradient-to-br from-cyan-50/50 via-white to-white border-b-2 border-cyan-100/50 pb-4">
+              <CardTitle className="text-lg flex items-center gap-3 text-slate-900 font-bold">
+                <div className="p-2.5 bg-gradient-to-br from-cyan-600 to-blue-700 rounded-xl shadow-lg">
+                  <Calendar className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
+                Events Activity
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-2">
+            <CardContent className="relative pt-6 pb-6">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-600 font-medium">Total Registered</span>
-                  <span className="text-xl font-bold text-slate-800">{registrations.length}</span>
+                  <span className="text-sm text-slate-600 font-semibold">Registered Events</span>
+                  <span className="text-3xl font-black bg-gradient-to-r from-cyan-600 to-blue-700 bg-clip-text text-transparent">{registrations.length}</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                <div className="relative w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
                   <div 
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-600 h-full rounded-full transition-all duration-500"
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-blue-600 to-blue-700 rounded-full transition-all duration-700 shadow-lg"
                     style={{ width: registrations.length > 0 ? '100%' : '0%' }}
-                  />
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-600 bg-cyan-50 px-3 py-2 rounded-lg border border-cyan-100">
+                  <Activity className="w-4 h-4 text-cyan-600" />
+                  <span className="font-semibold">Currently Enrolled</span>
                 </div>
                 <Button 
                   onClick={() => router.push('/events')}
-                  className="w-full mt-2 bg-teal-600 hover:bg-teal-700 transition-colors text-sm h-9"
+                  className="w-full mt-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-blue-700 hover:from-cyan-700 hover:via-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-base h-11"
                 >
-                  Browse Events
+                  Explore Events
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-slate-200 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-            <CardHeader className="bg-gradient-to-br from-emerald-50 to-white border-b border-slate-100 py-3">
-              <CardTitle className="text-base flex items-center gap-2 text-slate-700">
-                <User className="w-4 h-4 text-emerald-600" />
-                Account Status
+          <Card className="relative border-0 shadow-xl bg-white hover:shadow-2xl transition-all duration-500 overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 via-emerald-50/30 to-emerald-50/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative bg-gradient-to-br from-emerald-50/50 via-white to-white border-b-2 border-emerald-100/50 pb-4">
+              <CardTitle className="text-lg flex items-center gap-3 text-slate-900 font-bold">
+                <div className="p-2.5 bg-gradient-to-br from-emerald-600 to-green-700 rounded-xl shadow-lg">
+                  <CheckCircle2 className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
+                Account Health
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-2">
+            <CardContent className="relative pt-6 pb-6">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-600 font-medium">Current Status</span>
-                  <span className="text-base font-bold text-emerald-600">Active</span>
+                  <span className="text-sm text-slate-600 font-semibold">Status Level</span>
+                  <span className="text-3xl font-black bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">Active</span>
                 </div>
-                <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-xs text-emerald-700 font-medium">All systems operational</span>
+                <div className="relative w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 rounded-full shadow-lg">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200/50 shadow-sm">
+                  <div className="relative flex items-center gap-1.5">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse delay-75 shadow-md shadow-emerald-400/50" />
+                  </div>
+                  <span className="text-sm text-emerald-800 font-bold">All Systems Operational</span>
                 </div>
                 <Button 
                   onClick={() => router.push('/profile')}
-                  className="w-full mt-2 bg-teal-600 hover:bg-teal-700 transition-colors text-sm h-9"
+                  className="w-full mt-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 hover:from-emerald-700 hover:via-teal-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold text-base h-11"
                 >
                   Manage Profile
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardContent>
