@@ -50,13 +50,11 @@ export default function HeroSection() {
               Browse Events <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
-          {!isLoggedIn && (
-            <Link href="/signup">
-              <Button size="lg" variant="outline" className="border-2 border-slate-300 text-lg px-10 py-7 h-auto hover:bg-white hover:border-cyan-500 hover:text-cyan-600 hover:scale-105 transition-all duration-300 shadow-lg font-semibold bg-white/50 backdrop-blur-sm">
-                Create Account
-              </Button>
-            </Link>
-          )}
+          <Link href="/signup">
+            <Button size="lg" variant="outline" className="border-2 border-slate-300 text-lg px-10 py-7 h-auto hover:bg-white hover:border-cyan-500 hover:text-cyan-600 hover:scale-105 transition-all duration-300 shadow-lg font-semibold bg-white/50 backdrop-blur-sm">
+              Create Account
+            </Button>
+          </Link>
         </div>
 
         {/* Feature highlights */}
