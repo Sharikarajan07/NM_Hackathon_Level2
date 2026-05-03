@@ -18,7 +18,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Column(nullable = false)
@@ -29,6 +29,12 @@ public class User {
 
     @Column(nullable = false)
     private String role;
+
+    @Column(nullable = true)
+    private String googleId;
+
+    @Column(nullable = true)
+    private String githubId;
 
     @Column(nullable = false)
     private Boolean active = true;

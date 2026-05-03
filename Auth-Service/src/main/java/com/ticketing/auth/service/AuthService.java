@@ -23,6 +23,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new InvalidCredentialsException("Please sign in with Google or GitHub for this account");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }

@@ -134,12 +134,14 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://admin:admin123@eureka:8761/eureka/
     ports:
-      - "8080:8080"
+      - "8088:8080"
 
   auth-service:
     build:
       context: ./Auth-Service
     container_name: auth-service
+    env_file:
+      - .env
     depends_on:
       postgres-auth:
         condition: service_healthy
@@ -150,6 +152,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/authdb
       - SPRING_DATASOURCE_USERNAME=ticketing_user
       - SPRING_DATASOURCE_PASSWORD=ticketing_pass
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
+      - AUTH_FRONTEND_REDIRECT_URL=${AUTH_FRONTEND_REDIRECT_URL:-http://localhost:3000/oauth-success}
     ports:
       - "8081:8081"
 
@@ -262,7 +269,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_BASE_URL=http://10.74.115.219:3000
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+      - NEXT_PUBLIC_AUTH_URL=http://localhost:8081
 
 networks:
   default:

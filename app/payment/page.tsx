@@ -225,12 +225,12 @@ function PaymentPageContent() {
         throw new Error('Invalid event ID');
       }
       
-      // Use API Gateway instead of direct service call
-      const response = await fetch('http://10.74.115.219:8080/api/payments/create-intent', {
+      // Use configurable payment service URL
+      const paymentUrl = process.env.NEXT_PUBLIC_PAYMENT_URL || 'http://localhost:8086';
+      const response = await fetch(`${paymentUrl}/api/payments/create-intent`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Origin': 'http://10.74.115.219:3000'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           bookingId: bookingId,
@@ -322,12 +322,12 @@ function PaymentPageContent() {
         throw new Error('Invalid user or event information');
       }
       
-      // Use API Gateway instead of direct service call
-      const confirmResponse = await fetch('http://10.74.115.219:8080/api/payments/confirm', {
+      // Use configurable payment service URL
+      const paymentUrl = process.env.NEXT_PUBLIC_PAYMENT_URL || 'http://localhost:8086';
+      const confirmResponse = await fetch(`${paymentUrl}/api/payments/confirm`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Origin': 'http://10.74.115.219:3000'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           bookingId: bookingId,

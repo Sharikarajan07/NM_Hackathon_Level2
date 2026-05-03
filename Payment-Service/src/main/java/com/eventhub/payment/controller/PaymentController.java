@@ -29,6 +29,7 @@ import java.util.Map;
 @RequestMapping("/api/payments")
 @Slf4j
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class PaymentController {
 
     private final PaymentService paymentService;
