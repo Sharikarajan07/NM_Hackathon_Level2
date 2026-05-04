@@ -12,12 +12,12 @@ export default function OAuthSuccessClient() {
   useEffect(() => {
     const error = searchParams.get('error')
     if (error) {
-      if (error === 'oauth_unregistered' || error === 'oauth_failed') {
+      if (error === 'oauth_unregistered') {
         const email = searchParams.get('email')
         const provider = searchParams.get('provider')
         toast({
-          title: 'Account not registered',
-          description: 'Please sign up to continue.',
+          title: 'Account not found',
+          description: 'Please sign up to continue with this provider.',
           variant: 'destructive',
         })
         const signupParams = new URLSearchParams()

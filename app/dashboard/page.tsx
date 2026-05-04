@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [userRole, setUserRole] = useState('')
   const [tickets, setTickets] = useState<any[]>([])
   const [registrations, setRegistrations] = useState<any[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [eventsMap, setEventsMap] = useState<{[key: string]: any}>({})
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null)
@@ -79,6 +80,17 @@ export default function DashboardPage() {
         eventsMapping[event.id] = event
       })
       setEventsMap(eventsMapping)
+
+      try {
+        const allEvents = await eventsApi.getAll() as any[]
+        const now = new Date()
+        const upcoming = allEvents
+          .filter((event: any) => new Date(event.startDate || event.date || 0) > now)
+          .sort((a: any, b: any) => new Date(a.startDate || a.date).getTime() - new Date(b.startDate || b.date).getTime())
+        setUpcomingEvents(upcoming)
+      } catch (error) {
+        console.error('Failed to load upcoming events:', error)
+      }
       
     } catch (error) {
       console.error('Failed to load user data:', error)
@@ -136,10 +148,9 @@ export default function DashboardPage() {
 
   const generateTicketQRData = (ticket: any) => {
     // Encode ticket and event data in URL for offline validation
-    // Use environment variable for network-accessible URL or fallback to window location
-    const baseUrl = typeof window !== 'undefined'
-      ? (process.env.NEXT_PUBLIC_BASE_URL || `${window.location.protocol}//${window.location.hostname}:3000`)
-      : 'http://10.74.115.219:3000'
+    // Use an explicit QR base URL for mobile scanning, fallback to window origin
+    const envBaseUrl = process.env.NEXT_PUBLIC_QR_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
+    const baseUrl = envBaseUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
     
     const event = eventsMap[ticket.eventId]
     const ticketData = {
@@ -1009,10 +1020,14 @@ export default function DashboardPage() {
                 {registrations.slice(0, 3).map((reg, idx) => {
                   const event = eventsMap[reg.eventId]
                   if (!event) return null
-                  
+
+                  const eventDate = event.startDate || event.date
                   return (
-                    <div key={idx} className="p-3 bg-gradient-to-br from-teal-50/50 to-cyan-50/50 rounded-lg border border-teal-100 hover:border-teal-300 transition-colors cursor-pointer group"
-                      onClick={() => router.push(`/events/${event.id}`)}>
+                    <div
+                      key={`reg-${idx}`}
+                      className="p-3 bg-gradient-to-br from-teal-50/50 to-cyan-50/50 rounded-lg border border-teal-100 hover:border-teal-300 transition-colors cursor-pointer group"
+                      onClick={() => router.push(`/events/${event.id}`)}
+                    >
                       <div className="flex items-start gap-3">
                         <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
                           <Calendar className="w-4 h-4 text-white" />
@@ -1021,11 +1036,39 @@ export default function DashboardPage() {
                           <p className="text-sm font-semibold text-slate-900 truncate">{event.title}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <Clock className="w-3 h-3 text-slate-400" />
-                            <p className="text-xs text-slate-600">{formatDate(event.date)}</p>
+                            <p className="text-xs text-slate-600">{eventDate ? formatDate(eventDate) : 'Date TBD'}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <MapPin className="w-3 h-3 text-slate-400" />
-                            <p className="text-xs text-slate-600 truncate">{event.location}</p>
+                            <p className="text-xs text-slate-600 truncate">{event.location || 'Location TBD'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {registrations.length === 0 && upcomingEvents.slice(0, 3).map((event, idx) => {
+                  const eventDate = event.startDate || event.date
+                  return (
+                    <div
+                      key={`upcoming-${idx}`}
+                      className="p-3 bg-gradient-to-br from-teal-50/50 to-cyan-50/50 rounded-lg border border-teal-100 hover:border-teal-300 transition-colors cursor-pointer group"
+                      onClick={() => router.push(`/events/${event.id}`)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                          <Calendar className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 truncate">{event.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="w-3 h-3 text-slate-400" />
+                            <p className="text-xs text-slate-600">{eventDate ? formatDate(eventDate) : 'Date TBD'}</p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            <p className="text-xs text-slate-600 truncate">{event.location || 'Location TBD'}</p>
                           </div>
                         </div>
                       </div>
@@ -1033,7 +1076,7 @@ export default function DashboardPage() {
                   )
                 })}
                 
-                {registrations.length === 0 && (
+                {registrations.length === 0 && upcomingEvents.length === 0 && (
                   <div className="text-center py-8">
                     <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
                       <Calendar className="w-8 h-8 text-slate-400" />

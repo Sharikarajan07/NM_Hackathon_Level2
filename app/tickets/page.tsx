@@ -169,10 +169,9 @@ export default function TicketsPage() {
   const generateTicketQRData = (ticket: any) => {
     try {
       // Encode ticket and event data in URL for offline validation
-      // Use environment variable for network-accessible URL or fallback to window location
-      const baseUrl = typeof window !== 'undefined'
-        ? (process.env.NEXT_PUBLIC_BASE_URL || `${window.location.protocol}//${window.location.hostname}:3000`)
-        : 'http://10.74.115.219:3000'
+      // Use an explicit QR base URL for mobile scanning, fallback to window origin
+      const envBaseUrl = process.env.NEXT_PUBLIC_QR_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
+      const baseUrl = envBaseUrl || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
       
       const event = eventsMap[ticket.eventId]
       const ticketData = {
@@ -191,7 +190,7 @@ export default function TicketsPage() {
       return `${baseUrl}/validate/${ticket.ticketNumber || 'TICKET'}?d=${encoded}`
     } catch (error) {
       console.error('Error generating QR data:', error)
-      return `http://10.74.115.219:3000/tickets`
+      return 'http://localhost:3000/tickets'
     }
   }
 

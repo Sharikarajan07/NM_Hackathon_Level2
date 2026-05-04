@@ -1,6 +1,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
+ENV npm_config_ignore_scripts=1
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 FROM node:20-alpine AS builder

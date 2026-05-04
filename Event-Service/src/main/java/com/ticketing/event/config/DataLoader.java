@@ -171,14 +171,6 @@ public class DataLoader implements CommandLineRunner {
 
             System.out.println("✅ Sample events loaded successfully!");
         }
-
-        // Fix any existing placeholder URLs to use the new category-specific images
-        eventRepository.findAll().forEach(event -> {
-            if (event.getImageUrl() == null || event.getImageUrl().contains("unsplash.com") || event.getImageUrl().equals("/placeholder.jpg")) {
-                event.setImageUrl(defaultImageUrl(event.getCategory()));
-                eventRepository.save(event);
-            }
-        });
     }
 
     private Event createEvent(String title, String description, String category, String location,
@@ -197,28 +189,7 @@ public class DataLoader implements CommandLineRunner {
         event.setOrganizer(organizer);
         event.setActive(true);
         event.setCreatedAt(LocalDateTime.now());
-        event.setImageUrl(defaultImageUrl(category));
+        event.setImageUrl(null);
         return event;
-    }
-
-    private String defaultImageUrl(String category) {
-        if (category == null) {
-            return fallbackImageUrl();
-        }
-
-        return switch (category.toLowerCase()) {
-            case "conference" -> "/images/events/conference.png";
-            case "workshop" -> "/images/events/workshop.png";
-            case "music" -> "/images/events/music.png";
-            case "sports" -> "/images/events/sports.png";
-            case "networking" -> "/images/events/networking.png";
-            case "exhibition" -> "/images/events/exhibition.png";
-            case "entertainment" -> "/images/events/entertainment.png";
-            default -> fallbackImageUrl();
-        };
-    }
-
-    private String fallbackImageUrl() {
-        return "/placeholder.jpg";
     }
 }

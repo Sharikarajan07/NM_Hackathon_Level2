@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "prepare": "node scripts/setup-githooks.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

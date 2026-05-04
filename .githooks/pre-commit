@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+node scripts/secret-scan.js
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+  exit $RESULT
+fi
